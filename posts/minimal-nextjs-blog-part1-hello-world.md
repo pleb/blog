@@ -13,16 +13,17 @@ When I say minimal, I may be understating the intent somewhat, so allow me to cl
 
 My current blog is a WordPress site. Yes, a ubiquitous blogging platform and nothing really of note. So why the change? Well, it's never really felt like a good fit for me. As a developer, I want something more akin to what I'm used to. For instance, I'd like to use source control, and I'd love for my blog to update based on my commits to the Main branch; and possibly a Draft (aka dev) branch. Additionally, I want firm control over the process and tech. A WP site is excellent, but I feel it's overkill for a simple blog and due to its popularity it's a big moving target for hackers. And simply, I cannot be bothered keeping on top of the maintenance required to keep it safe, so therefore, it's only a matter of time before it's defaced by an automated bot of some sort - bah.
 
-Ok. So what's the MVP 🤔... let's create a list
+Ok. So time for me to create an MVP list 🤔...
 
 I'll start with what I want from the current WP site
  - Blog posts (Obviously)
-   - Markdown
  - Blog tags (View all posts in a category etc.)
  - Miscellaneous pages
-   - Markdown
+
+And, what the features that I currently don't have
  - Static website (No need for a real backend. Safer from hackers due to neglect)
  - Automatically update when I commit to the Main branch (CI/CD)
+ - Markdown support
 
 ## Project creation
 
@@ -45,28 +46,28 @@ Next, I'll add these scripts to the package.json file, as per the [docs](https:/
 
 ## TypeScript support
 
-Pretty easy to add TS support to a project these days, however, for Next.js there's a couple of little tricks, so excuse my somewhat weird way of going about this.
+It's pretty easy to add TS support to a project these days. However, for Next.js there's a couple of little tricks, so excuse my somewhat weird way of going about this.
 
 ```powershell
 npm install typescript @types/react @types/node --save-dev
 ```
 
-Then I'll and an empty tsconfig.json file (Wait for it)
+Then I'll add an empty tsconfig.json file... to be continued (Wait for it)
 
 ## Directory structure
 
-Because I can't run Next.js with the pages directory, I'll add the ones I envisage that I'll need at this point. 
+Because I can't run Next.js without the pages directory, I'll add the ones I envisage that I'll need at this point. 
 
 My folder layout will be like so:
  - pages (react pages)
- - posts (blog post md files)
+ - posts (blog posts in markdown format)
  - public (static files, such as screenshots etc.)
    - Note: these files are served from /
  - components (react components)
 
 ## Index page
 
-Obviously, there's nothing to serve so next I'll add my IndexPage component. To do this, I'll create an Index.tsx file under the pages directory with the following component code
+Obviously, when the project is empty there's nothing to serve so next I'll add my IndexPage component. To do this, I'll create an Index.tsx file under the pages directory with the following component code
 
 ```jsx
 import React from 'react'
@@ -76,13 +77,15 @@ const IndexPage = () => <div>Hello World</div>
 export default IndexPage
 ```
 
+If you didn't already guess, this will render "Hello World" to the browser screen.
+
 ## Checkpoint 
 
 Ok, so now I should have everything to get a basic page loading. Your project should look like this - if you're following along at home.
 
 ![Project Tree](/minimal-nextjs-blog-part1-hello-world/project-tree.png)
 
-To kick off the dev server it's as simple as running this command, which is, of course, is from the scripts entry I added to the project.json file earlier
+To kick off the dev server it's as simple as running this command, which is, of course, is from the scripts entry I added to the project.json file earlier.
 
 ```powershell
 npm run dev
@@ -100,15 +103,15 @@ Brillant it works.
 
 ## Finish line
 
-Finished, right? Well almost. If you look carefully at the console output you'll see the next.js framework has populated the tsconfig.json file with some default values. Good. However, I'll be adding/changing a few for my own preference.
+Finished, right? Well almost. If you look carefully at the console output you'll see the Next.js framework has populated the tsconfig.json file with its default. Ah ha, the continuation point from early. See I told you my weird method of adding TS had a purpose. However, I'll be adding/changing a few of the defaults to my own preference.
 
-I'll be setting strict to true. You can read more about this [change on the TS Website](https://www.typescriptlang.org/tsconfig#Strict_Type_Checking_Options_6173).
+I'll be setting strict to true. You can read more about this change on the [TS Website](https://www.typescriptlang.org/tsconfig#Strict_Type_Checking_Options_6173).
 
 ```json
 "strict": true,
 ```
 
-To ensure I'm getting the most out of Type Safety, I'll also be enabling no implicit this, no implicit any, and lastly, no implicit return types.
+And to ensure I'm getting the most out of Type Safety, I'll also be enabling no implicit this, no implicit any, and lastly, no implicit return types.
 
 ```json
 "noImplicitThis": true,
@@ -146,3 +149,5 @@ Then add my configuration to the `.prettierrc.json` file. Here are my usual valu
 ```
 
 [Depending on your editor](https://prettier.io/docs/en/editors.html) will depend on how you use it. For webstorm, I'm in the habit of Ctrl+Alt+Shift+P whenever I've made changes to a file, so you won't see any fancy script commands added to the package.json file or any cool way of making Pettier work automatically.
+
+And FINISHED! In [part 2](/posts/minimal-nextjs-blog-part1-hello-world) I'll be rendering a list of posts and categories to the screen. Don't miss it, as it's going to be amazing (Self Certified)
