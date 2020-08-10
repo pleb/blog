@@ -150,4 +150,8 @@ Then add my configuration to the `.prettierrc.json` file. Here are my usual valu
 
 [Depending on your editor](https://prettier.io/docs/en/editors.html) will depend on how you use it. For webstorm, I'm in the habit of Ctrl+Alt+Shift+P whenever I've made changes to a file, so you won't see any fancy script commands added to the package.json file or any cool way of making Pettier work automatically.
 
-And FINISHED! In [part 2](/posts/minimal-nextjs-blog-part1-hello-world) I'll be rendering a list of posts and categories to the screen. Don't miss it, as it's going to be amazing (Self Certified)
+And FINISHED! 
+
+---
+
+In [part 2](/posts/minimal-nextjs-blog-part1-hello-world) I'll be rendering a list of posts and categories to the screen. Don't miss it, as it's going to be amazing (Self Certified)

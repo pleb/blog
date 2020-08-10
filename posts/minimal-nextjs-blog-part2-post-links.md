@@ -130,7 +130,7 @@ With all this combined, my browser page now looks like this:
 
 When processing the files found under the `/posts` directory, we use Gray Matter to parse the files into Meta and Content. 
 
-```
+```ts
 const { data, content } = matter(readFileSync(path))
 ```
 
