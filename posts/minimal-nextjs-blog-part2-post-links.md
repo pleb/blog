@@ -112,9 +112,8 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
     .filter((fn: string) => fn.endsWith('.md'))
     .map((fn: string) => {
       const path = `${process.cwd()}/posts/${fn}`
-      const { data, content } = matter(readFileSync(path))
-      const snippet = data['snippet'] ?? content.substr(0, 200)
-      return { title: data['title'], snippet, slug: data['slug'], categories: data['categories'] ?? [], date: data['date']  }
+      const { data } = matter(readFileSync(path))
+      return { title: data['title'], snippet: data['snippet'] ?? '', slug: data['slug'], categories: data['categories'] ?? [], date: data['date']  }
     })
   return {
     props: { blogs }

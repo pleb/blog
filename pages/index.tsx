@@ -2,7 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import { GetStaticProps } from 'next'
 import matter from 'gray-matter'
-import { extractBlogMeta, getPostsMarkdownFileNames, readPostFile } from "../shared/posts";
+import { extractBlogMeta, getPostsMarkdownFileNames, readPostFile } from '../shared/posts'
 
 export interface IBlogMeta {
   title: string

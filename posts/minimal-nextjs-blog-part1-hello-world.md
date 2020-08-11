@@ -142,7 +142,7 @@ Then add my configuration to the `.prettierrc.json` file. Here are my usual valu
   "semi":  true,
   "trailingComma":  "none",
   "singleQuote":  true,
-  "printWidth":  120,
+  "printWidth":  160,
   "tabWidth":  2,
   "endOfLine": "lf"
 }

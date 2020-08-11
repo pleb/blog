@@ -4,7 +4,10 @@ export const getPostsMarkdownFileNames = async () => (await readdir(`${process.c
 
 export const readPostFile = (fileName: string) => readFileSync(`${process.cwd()}/posts/${fileName}`)
 
-export const extractBlogMeta = (data: { [key: string]: any }, content: string) => {
-  const snippet = data['snippet'] ?? content.substr(0, 200)
-  return { title: data['title'], snippet, slug: data['slug'], categories: data['categories'] ?? [], date: data['date'] }
-}
+export const extractBlogMeta = (data: { [key: string]: any }) => ({
+  title: data['title'],
+  snippet: data['snippet'] ?? '',
+  slug: data['slug'],
+  categories: data['categories'] ?? [],
+  date: data['date']
+})

@@ -22,7 +22,7 @@ Although parsing and converting markdown to HTML sounds like a fun exercise, I w
  - [remark-highlight.js](https://github.com/remarkjs/remark-highlight.js#readme) - Highlight code blocks with highlight.js (via lowlight)
  - [remark-html](https://github.com/remarkjs/remark-html) - Serialize Markdown as HTML
     
-Adding these libraries is pretty easy, as you can imagine:
+Adding these libraries is pretty easy, as you can imagine
 
 ```powershell
 npm install unified remark-parse remark-highlight.js remark-html --save-dev
@@ -34,11 +34,11 @@ However, there is one catch. Because I'm not allowing implicit any `"noImplicitA
 
 There are a few easy ways to go about adding definitions in TS. I won't cover these, but the one I usually settle on is my own mini @types folder, very much like the `/nodes_modules/@types` one.
 
-I'll add the folder `types` and the package folder `remark-highlight.js` and the types file `index.d.ts`
+I'll add the folder `types` and the package folder `remark-highlight.js` and the types file `index.d.ts`, or altogether `/types/remark-highlight.js/index.d.ts`
 
 ![types folder](/minimal-nextjs-blog-part3-show-post/types-folder.png)
 
-Then in the types file, I'll add the following, just enough to stop the error. If i decided to use more of the package, I'll continue to build out its types.
+Then in the types file, I'll add the following, which is just enough to stop the error. If I decided to use more of the package, later on, I'll continue to build out its types.
 
 ```ts
 declare module 'remark-highlight.js' {
@@ -131,9 +131,8 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
     .filter((fn: string) => fn.endsWith('.md'))
     .map((fn: string) => {
       const path = `${process.cwd()}/posts/${fn}`
-      const { data, content } = matter(readFileSync(path))
-      const snippet = data['snippet'] ?? content.substr(0, 200)
-      return { title: data['title'], snippet, slug: data['slug'], categories: data['categories'] ?? [], date: data['date']  }
+      const { data } = matter(readFileSync(path)
+      return { title: data['title'], snippet: data['snippet'] ?? '', slug: data['slug'], categories: data['categories'] ?? [], date: data['date']  }
     })
   return {
     props: { blogs }
@@ -144,14 +143,19 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
 to
 
 ```ts
+import { readdir, readFileSync } from 'fs-extra'
+
 export const getPostsMarkdownFileNames = async () => (await readdir(`${process.cwd()}/posts`)).filter((fn: string) => fn.endsWith('.md'))
 
 export const readPostFile = (fileName: string) => readFileSync(`${process.cwd()}/posts/${fileName}`)
 
-export const extractBlogMeta = (data: { [key: string]: any }, content: string) => {
-  const snippet = data['snippet'] ?? content.substr(0, 200)
-  return { title: data['title'], snippet, slug: data['slug'], categories: data['categories'] ?? [], date: data['date'] }
-}
+export const extractBlogMeta = (data: { [key: string]: any }) => ({
+  title: data['title'],
+  snippet: data['snippet'] ?? '',
+  slug: data['slug'],
+  categories: data['categories'] ?? [],
+  date: data['date']
+})
 
 export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexProps }> => {
   const blogs = (await getPostsMarkdownFileNames()).map((fileName: string) => {
@@ -255,16 +259,19 @@ export const getPostsMarkdownFileNames = async () => (await readdir(`${process.c
 
 export const readPostFile = (fileName: string) => readFileSync(`${process.cwd()}/posts/${fileName}`)
 
-export const extractBlogMeta = (data: { [key: string]: any }, content: string) => {
-  const snippet = data['snippet'] ?? content.substr(0, 200)
-  return { title: data['title'], snippet, slug: data['slug'], categories: data['categories'] ?? [], date: data['date'] }
-}
+export const extractBlogMeta = (data: { [key: string]: any }) => ({
+  title: data['title'],
+  snippet: data['snippet'] ?? '',
+  slug: data['slug'],
+  categories: data['categories'] ?? [],
+  date: data['date']
+})
 ```
 
 
 ### Page paths
 
-Next.js needs a way to know how many pages exist for this slug, as in order to build a static website, all pages will need to be built in advanced. To do this, I'll define the `getStaticPaths` helper function. It looks like so:
+Next.js needs a way to know how many pages exist for this slug, as in order to build a static website, all pages will need to be known about at build/pack time. To do this, I'll define the `getStaticPaths` helper function. It looks like so:
 
 ```ts
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -284,7 +291,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 }
 ```
 
-This returns information which denotes all the paths under the `blog/*` slug we need a static file built for.
+This returns information which denotes all the paths under the `blog/*` slug we need to handle in a static manner.
 
 ### Page content
 
@@ -294,7 +301,7 @@ Now that I've told Next.js how many pages exist under the `blog/*` slug route, I
 export const getStaticProps: GetStaticProps = async (context): Promise<{ props: BlogPostProps }> => {
   const slug = context.params!.slug
   const { data, content } = matter(readPostFile(`${slug}.md`))
-  const blogMeta = extractBlogMeta(data, content)
+  const blogMeta = extractBlogMeta(data)
 
   const result = await unified().use(markdown).use(highlight).use(html).process(content)
 
@@ -386,8 +393,8 @@ export default IndexPage
 export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexProps }> => {
   const postFileNames = await getPostsMarkdownFileNames()
   const blogs = postFileNames.map((fileName: string) => {
-    const { data, content } = matter(readPostFile(fileName))
-    return extractBlogMeta(data, content)
+    const { data } = matter(readPostFile(fileName))
+    return extractBlogMeta(data)
   })
   return {
     props: { blogs }
@@ -433,7 +440,7 @@ export default BlogPostPage
 export const getStaticProps: GetStaticProps = async (context): Promise<{ props: BlogPostProps }> => {
   const slug = context.params!.slug
   const { data, content } = matter(readPostFile(`${slug}.md`))
-  const blogMeta = extractBlogMeta(data, content)
+  const blogMeta = extractBlogMeta(data)
 
   const result = await unified().use(markdown).use(highlight).use(html).process(content)
 
@@ -471,10 +478,13 @@ export const getPostsMarkdownFileNames = async () => (await readdir(`${process.c
 
 export const readPostFile = (fileName: string) => readFileSync(`${process.cwd()}/posts/${fileName}`)
 
-export const extractBlogMeta = (data: { [key: string]: any }, content: string) => {
-  const snippet = data['snippet'] ?? content.substr(0, 200)
-  return { title: data['title'], snippet, slug: data['slug'], categories: data['categories'] ?? [], date: data['date'] }
-}
+export const extractBlogMeta = (data: { [key: string]: any }) => ({
+  title: data['title'],
+  snippet: data['snippet'] ?? '',
+  slug: data['slug'],
+  categories: data['categories'] ?? [],
+  date: data['date']
+})
 ```
 
 **The full source for /types/remark-highlight.js/index.d.ts**

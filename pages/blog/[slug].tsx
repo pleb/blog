@@ -6,7 +6,7 @@ import unified from 'unified'
 import markdown from 'remark-parse'
 import matter from 'gray-matter'
 import { GetStaticProps, GetStaticPaths } from 'next'
-import { extractBlogMeta, getPostsMarkdownFileNames, readPostFile } from "../../shared/posts";
+import { extractBlogMeta, getPostsMarkdownFileNames, readPostFile } from '../../shared/posts'
 
 type BlogPostProps = { blogMeta: IBlogMeta; content: string }
 
