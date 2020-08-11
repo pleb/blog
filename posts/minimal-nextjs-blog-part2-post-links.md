@@ -8,7 +8,9 @@ categories:
   - react
 ---
 
-In part 1 I covered setting up Next.js to the bare minimum of rendering "hello world" to the screen. I then added a few other items, such as prettier, but nothing too fancy. If you haven't read through [part 1 yet](/posts/minimal-nextjs-blog-part1-hello-world), I would recommend it as the place to start.
+*This is a multi-part series. If you haven't read the previous posts, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue on from each other and are not individual units.*
+
+---
 
 Part 2 is about rendering a list of links to posts to the browser screen. Although initially, you might be thinking - hey that's not very hard - bare in mind that I'm building a static site with no real backend, all this is decided at build (webpack) time. Such is the power of [Next.js](https://nextjs.org).
 
@@ -125,6 +127,89 @@ In this function, I simply query the file system for all files under the `/posts
 With all this combined, my browser page now looks like this:
 
 ![web screenshot](/minimal-nextjs-blog-part2-post-links/web-screenshot.png)
+
+**The full source for /pages/index.tsx**
+
+```ts
+import Link from "next/link";
+import { GetStaticProps } from "next";
+import { readdir, readFileSync } from "fs-extra";
+import matter from "gray-matter";
+
+export interface IBlogMeta {
+  title: string
+  snippet: string
+  slug: string
+  categories: string[]
+  date: string
+}
+
+interface IIndexProps {
+  blogs: IBlogMeta[]
+}
+
+const IndexPage = (props: IIndexProps) => {
+  const distinctCategories = props.blogs
+  .map((blog) => blog.categories)
+  .reduce((acc, val) => ([...acc, ...val]))
+  .filter((value, index, self) => self.indexOf(value) === index)
+  .sort((catA: string, catB: string) => catA.localeCompare(catB))
+
+  const sortedPosts = props.blogs.sort((blogA, blogB) => new Date(blogB.date).getTime() - new Date(blogA.date).getTime())
+
+  return (
+    <>
+      <header>
+        <p>My Blog</p>
+      </header>
+      <main>
+        <h1>Home page</h1>
+        <section>
+          <h2>Posts</h2>
+          {sortedPosts.map((blog) => (
+            <article key={blog.slug}>
+              <Link href={`/blog/${blog.slug}`}>
+                <a>{blog.title}</a>
+              </Link>
+              <details>{blog.snippet}</details>
+            </article>
+          ))}
+        </section>
+        <section>
+          <h2>Categories</h2>
+          {distinctCategories.map((category) => (
+            <ul key={category}>
+              <Link href={`/category/${category}`}>
+                <a>{category}</a>
+              </Link>
+            </ul>
+          ))}
+        </section>
+      </main>
+      <footer>
+        <p>Author: Wade Baglin</p>
+      </footer>
+    </>
+  )
+}
+
+export default IndexPage
+
+export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexProps }> => {
+  const files = await readdir(`${process.cwd()}/posts`)
+  const blogs = files
+  .filter((fn: string) => fn.endsWith('.md'))
+  .map((fn: string) => {
+    const path = `${process.cwd()}/posts/${fn}`
+    const { data, content } = matter(readFileSync(path))
+    const snippet = data['snippet'] ?? content.substr(0, 200)
+    return { title: data['title'], snippet, slug: data['slug'], categories: data['categories'] ?? [], date: data['date']  }
+  })
+  return {
+    props: { blogs }
+  }
+}
+```
 
 ## How does this work
 
