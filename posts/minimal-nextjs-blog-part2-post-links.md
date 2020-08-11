@@ -1,7 +1,7 @@
 ---
 title: Minimal Next.js Blog (Part 2 - Post Link)
 slug: minimal-nextjs-blog-part2-post-links
-date: "07-08-2020"
+date: August 7, 2020
 categories:
   - next.js
   - blogging
@@ -128,6 +128,45 @@ With all this combined, my browser page now looks like this:
 
 ![web screenshot](/minimal-nextjs-blog-part2-post-links/web-screenshot.png)
 
+## How does this work
+
+When processing the files found under the `/posts` directory, we use Gray Matter to parse the files into Meta and Content. 
+
+```ts
+const { data, content } = matter(readFileSync(path))
+```
+
+And to supply the meta we define it in the top of each blog post file. For example, here's a sample blog post.
+
+```text
+---
+title: My blog post title
+slug: my-blog-post-slug
+date: August 7, 2020
+snippet: This is a blog post snippet (optional)
+categories:
+  - cat 1
+  - cat 2
+---
+# My Blog Post
+
+Some markdown blog post
+
+ - One
+ - Two
+ - Three
+
+A [link](#)
+```
+
+And that's it, such a simple way of writing a blog post - no database required.
+
+---
+
+In [part 3](/posts/minimal-nextjs-blog-part3-show-post) I'll be rendering a single blog post to the screen, and like this part, it's going to be amazing (Again, Self Certified)
+
+## Source
+
 **The full source for /pages/index.tsx**
 
 ```ts
@@ -210,40 +249,3 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
   }
 }
 ```
-
-## How does this work
-
-When processing the files found under the `/posts` directory, we use Gray Matter to parse the files into Meta and Content. 
-
-```ts
-const { data, content } = matter(readFileSync(path))
-```
-
-And to supply the meta we define it in the top of each blog post file. For example, here's a sample blog post.
-
-```text
----
-title: My blog post title
-slug: my-blog-post-slug
-date: August 7, 2020
-snippet: This is a blog post snippet (optional)
-categories:
-  - cat 1
-  - cat 2
----
-# My Blog Post
-
-Some markdown blog post
-
- - One
- - Two
- - Three
-
-A [link](#)
-```
-
-And that's it, such a simple way of writing a blog post - no database required.
-
----
-
-In [part 3](/posts/minimal-nextjs-blog-part3-show-post) I'll be rendering a single blog post to the screen, and like this part, it's going to be amazing (Again, Self Certified)

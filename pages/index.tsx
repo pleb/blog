@@ -1,8 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
 import { GetStaticProps } from 'next'
-import { readFileSync, readdir } from 'fs-extra'
 import matter from 'gray-matter'
+import { extractBlogMeta, getPostsMarkdownFileNames, readPostFile } from "../shared/posts";
 
 export interface IBlogMeta {
   title: string
@@ -19,10 +19,11 @@ interface IIndexProps {
 const IndexPage = (props: IIndexProps) => {
   const distinctCategories = props.blogs
     .map((blog) => blog.categories)
-    .reduce((acc, val) => ([...acc, ...val]))
+    .reduce((acc, val) => [...acc, ...val])
     .filter((value, index, self) => self.indexOf(value) === index)
+    .sort((catA: string, catB: string) => catA.localeCompare(catB))
 
-  distinctCategories.sort((catA: string, catB: string) => catA.localeCompare(catB))
+  const sortedPosts = props.blogs.sort((blogA, blogB) => new Date(blogB.date).getTime() - new Date(blogA.date).getTime())
 
   return (
     <>
@@ -33,7 +34,7 @@ const IndexPage = (props: IIndexProps) => {
         <h1>Home page</h1>
         <section>
           <h2>Posts</h2>
-          {props.blogs.map((blog) => (
+          {sortedPosts.map((blog) => (
             <article key={blog.slug}>
               <Link href={`/blog/${blog.slug}`}>
                 <a>{blog.title}</a>
@@ -63,16 +64,11 @@ const IndexPage = (props: IIndexProps) => {
 export default IndexPage
 
 export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexProps }> => {
-  const files = await readdir(`${process.cwd()}/posts`)
-  const blogs = files
-    .filter((fn: string) => fn.endsWith('.md'))
-    .map((fn: string) => {
-      const path = `${process.cwd()}/posts/${fn}`
-      const { data, content } = matter(readFileSync(path))
-      const snippet = data['snippet'] ?? content.substr(0, 200)
-      return { title: data['title'], snippet, slug: data['slug'], categories: data['categories'] ?? [], date: data['date']  }
-    })
-    .sort((blogA, blogB) => new Date(blogB.date).getTime() - new Date(blogA.date).getTime())
+  const postFileNames = await getPostsMarkdownFileNames()
+  const blogs = postFileNames.map((fileName: string) => {
+    const { data, content } = matter(readPostFile(fileName))
+    return extractBlogMeta(data, content)
+  })
   return {
     props: { blogs }
   }

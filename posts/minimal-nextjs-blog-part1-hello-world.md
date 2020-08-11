@@ -1,7 +1,7 @@
 ---
 title: Minimal Next.js Blog (Part 1 - Hello World)
 slug: minimal-nextjs-blog-part1-hello-world
-date: August 7, 2020
+date: August 6, 2020
 snippet: Building a static blog 
 categories:
   - next.js
