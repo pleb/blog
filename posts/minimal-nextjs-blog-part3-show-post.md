@@ -320,6 +320,10 @@ Now when I click a post link, I can see the post. Pretty neat, huh? 🎉
 
 ![demo of showing blog posts](/minimal-nextjs-blog-part3-show-post/demo.gif)
 
+---
+
+In [part 4](/posts/minimal-nextjs-blog-part4-show-category-list) I'll be rendering a list of posts within a category, and like this part, it's going to be amazing (Again, Self Certified)
+
 ## Source
 
 **The full source for /pages/index.tsx**
