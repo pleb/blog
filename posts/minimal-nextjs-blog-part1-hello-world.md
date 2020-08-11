@@ -11,7 +11,7 @@ categories:
 
 When I say minimal, I may be understating the intent somewhat, so allow me to clarify what I mean. 
 
-My current blog is a WordPress site. Yes, a ubiquitous blogging platform and nothing really of note. So why the change? Well, it's never really felt like a good fit for me. As a developer, I want something more akin to what I'm used to. For instance, I'd like to use source control, and I'd love for my blog to update based on my commits to the Main branch; and possibly a Draft (aka dev) branch. Additionally, I want firm control over the process and tech. A WP site is excellent, but I feel it's overkill for a simple blog and due to its popularity it's a big moving target for hackers. And simply, I cannot be bothered keeping on top of the maintenance required to keep it safe, so therefore, it's only a matter of time before it's defaced by an automated bot of some sort - bah.
+My current blog is a WordPress site. Yes, a ubiquitous blogging platform and nothing really of note. So why the change? Well, it's never really felt like a good fit for me. As a developer, I want something more akin to what I'm used to. For instance, I'd like to use source control, and I'd love for my blog to update based on my commits to the Main branch; and possibly a Draft (aka dev) branch. Additionally, I want firm control over the process and tech. A WP site is excellent, but I feel it's overkill for a simple blog and due to its popularity it's a big moving target for hackers. Lastly, a simple factor of the matter is I cannot be bothered keeping on top of the maintenance required to keep it safe, therefore it's only a matter of time before it's defaced by an automated bot of some sort - bah.
 
 Ok. So time for me to create an MVP list 🤔...
 
@@ -20,7 +20,7 @@ I'll start with what I want from the current WP site
  - Blog tags (View all posts in a category etc.)
  - Miscellaneous pages
 
-And, what the features that I currently don't have
+and what the features that I currently don't have
  - Static website (No need for a real backend. Safer from hackers due to neglect)
  - Automatically update when I commit to the Main branch (CI/CD)
  - Markdown support
@@ -56,18 +56,18 @@ Then I'll add an empty tsconfig.json file... to be continued (Wait for it)
 
 ## Directory structure
 
-Because I can't run Next.js without the pages directory, I'll add the ones I envisage that I'll need at this point. 
+Because I can't run Next.js without the pages directory, I'll it and the ones I envisage that I'll need. 
 
 My folder layout will be like so:
- - pages (react pages)
+ - pages (react pages. *known Next.js directory*)
  - posts (blog posts in markdown format)
- - public (static files, such as screenshots etc.)
+ - public (static files, such as screenshots etc. *known Next.js directory*)
    - Note: these files are served from /
- - components (react components)
+ - components (react components. *known Next.js directory*)
 
 ## Index page
 
-Obviously, when the project is empty there's nothing to serve so next I'll add my IndexPage component. To do this, I'll create an Index.tsx file under the pages directory with the following component code
+Obviously, when the project is empty there's nothing to serve so next I'll add my IndexPage component. To do this, I'll create an Index.tsx file under the pages directory with the following component code:
 
 ```jsx
 import React from 'react'
@@ -81,7 +81,7 @@ If you didn't already guess, this will render "Hello World" to the browser scree
 
 ## Checkpoint 
 
-Ok, so now I should have everything to get a basic page loading. Your project should look like this - if you're following along at home.
+Ok, so now I should have everything to get a basic page loading. My project is currently looking like this:
 
 ![Project Tree](/minimal-nextjs-blog-part1-hello-world/project-tree.png)
 
@@ -97,13 +97,13 @@ Yay! Some console output. Looking good.
 
 If I navigate to http://localhost:3000 I should see my IndexPage component rendered on the screen.
 
-Brillant it works.
+Brilliant! It works.
 
 ![Webpage screenshot](/minimal-nextjs-blog-part1-hello-world/first-page-load.png)
 
 ## Finish line
 
-Finished, right? Well almost. If you look carefully at the console output you'll see the Next.js framework has populated the tsconfig.json file with its default. Ah ha, the continuation point from early. See I told you my weird method of adding TS had a purpose. However, I'll be adding/changing a few of the defaults to my own preference.
+Finished, right? Well almost. If you look carefully at the console output you'll see the Next.js framework has populated the tsconfig.json file with its default. Ah ha, the continuation point from early. See I told you my weird method of adding TS had a purpose. Next, I'll change a few of the defaults to my own preference.
 
 I'll be setting strict to true. You can read more about this change on the [TS Website](https://www.typescriptlang.org/tsconfig#Strict_Type_Checking_Options_6173).
 
@@ -111,7 +111,7 @@ I'll be setting strict to true. You can read more about this change on the [TS W
 "strict": true,
 ```
 
-And to ensure I'm getting the most out of Type Safety, I'll also be enabling no implicit this, no implicit any, and lastly, no implicit return types.
+To ensure I'm getting the most out of Type Safety, I'll also be enabling no implicit this, no implicit any, and lastly, no implicit return types.
 
 ```json
 "noImplicitThis": true,
@@ -135,22 +135,22 @@ To install prettier I'll simply run this NPM command.
 npm install prettier --save-dev
 ```
 
-Then add my configuration to the `.prettierrc.json` file. Here are my usual values
+Then add my configuration to the `.prettierrc.json` file. Here are my usual values:
 
 ```json
 {
   "semi":  true,
   "trailingComma":  "none",
   "singleQuote":  true,
-  "printWidth":  160,
+  "printWidth":  140,
   "tabWidth":  2,
   "endOfLine": "lf"
 }
 ```
 
-[Depending on your editor](https://prettier.io/docs/en/editors.html) will depend on how you use it. For webstorm, I'm in the habit of Ctrl+Alt+Shift+P whenever I've made changes to a file, so you won't see any fancy script commands added to the package.json file or any cool way of making Pettier work automatically.
+[Depending on your editor](https://prettier.io/docs/en/editors.html) depends on how one uses prettier. For webstorm, I'm in the habit of Ctrl+Alt+Shift+P whenever I've made changes to a file, so you won't see any fancy script commands added to the package.json file or any cool way of making Pettier work automatically.
 
-And FINISHED! 
+Yay. FINISHED! 
 
 ---
 

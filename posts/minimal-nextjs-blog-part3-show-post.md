@@ -12,17 +12,17 @@ categories:
 
 ---
 
-Part 3, Welcome. In this part, we will be rendering a single blog post to the screen. To do this I'll need to add infrastructure to support handling each blog post page route and to convert markdown to HTML.
+Part 3, Welcome. In this part, we will be rendering a single blog post to the screen. To do this I'll need to add infrastructure to support handling each blog post page route, and the conversion of markdown to HTML.
 
 ## Third-party Libraries
 
-Although parsing and converting markdown to HTML sounds like a fun exercise, I will resisting my temptation to go off on a tangent and instead focus on the task at hand, aka this blog series about creating a blog. Blogception if you will 😀. Anyway, to help keep me on the correct path I will be using the package [unified](https://github.com/unifiedjs/unified), an interface for processing text using syntax trees, and the following unified plugins:
+Although parsing and converting markdown to HTML sounds like a fun exercise, I will resist my temptation to go off on a tangent and instead focus on the task at hand, aka this blog series about creating a blog. Blogception if you will 😀. Anyway, to help keep me on the correct path I will be using the package [unified](https://github.com/unifiedjs/unified), an interface for processing text using syntax trees, and the following unified plugins:
 
  - [remark-parse](https://github.com/remarkjs/remark/tree/main/packages/remark-parse) -  Parses Markdown to mdast syntax trees
  - [remark-highlight.js](https://github.com/remarkjs/remark-highlight.js#readme) - Highlight code blocks with highlight.js (via lowlight)
  - [remark-html](https://github.com/remarkjs/remark-html) - Serialize Markdown as HTML
     
-Adding these libraries is pretty easy, as you can imagine
+Adding these libraries is pretty easy, as you can imagine:
 
 ```powershell
 npm install unified remark-parse remark-highlight.js remark-html --save-dev
@@ -51,24 +51,27 @@ declare module 'remark-highlight.js' {
 
 ## Blog page routing/display
 
-Now that I've installed the libraries I'll need to display a blog page, I'll add the page to handle routes to a blog post. To do this, I'll be making use of [dynamic route segments](https://nextjs.org/docs/routing/introduction#dynamic-route-segments). Essentially, this feature allows me to build all pages that will reside under the /blogs/* segment. As this is a static website, I'm not capturing the route, but rather, I'm building out the known pages under this route dynamically.
+Now I've installed the libraries I'll need to display a blog page. I'll add the page to handle routes to a blog post. To do this, I'll be making use of [dynamic route segments](https://nextjs.org/docs/routing/introduction#dynamic-route-segments). Essentially, this feature allows me to build all pages that will reside under the /blogs/* segment at build (webpack) time. Note: As this is a static website, I'm not capturing the route, but rather, I'm building out the known pages under this route dynamically.
 
-First, I'll add the specially named file `[slug].tsx` under the folder `blog` in the `pages` directory. The path looks like this `./pages/blog/[slug].tsx`
+First, I'll add the specially named file `[slug].tsx` under the folder `blog` in the `pages` directory. The path looks like this: `./pages/blog/[slug].tsx`
 
 ### Page component
 
 A blog page, of course, will be a new React component, so I'll define that first. I'll start with my props type which looks like this:
 
 ```jsx
-type BlogPostProps = { blogMeta: IBlogMeta, content: string }
+interface IBlogPostProps {
+  blogMeta: IBlogMetadata
+  content: string
+}
 ```
 
-There's not much too it, and I've even reused the `IBlogMeta` type defined in my `index.tsx` file. Nice 👍
+There's not much too it, and I've even reused the `IBlogMetadata` type defined in my `index.tsx` file. Nice 👍
 
-Then I'll define a component to render the blog to the browser screen. I won't do anything fancy yet, as like in the index page, my aim is to simply render the conent to the screen as I'm planning a UI styling step once the blog is feature complete. Accordingly, my component looks like this:
+Then I'll define a component to render the blog to the browser screen. I won't do anything fancy yet, as like in the index page, my aim is to simply render the content to the screen as I'm planning a UI styling step once the blog is feature complete. Accordingly, my component looks like this:
 
 ```jsx
-const BlogPostPage = (props: BlogPostProps) => {
+const BlogPostPage = (props: IBlogPostProps) => {
   return (
     <>
       <header>
@@ -87,32 +90,7 @@ const BlogPostPage = (props: BlogPostProps) => {
 }
 ```
 
-Which, if we were to display the sample blog post from [part 2](/posts/minimal-nextjs-blog-part2-post-links) on the screen, it would look like this:
-
-Sample blog post
-
-```text
----
-title: My blog post title
-slug: my-blog-post-slug
-date: August 7, 2020
-snippet: This is a blog post snippet (optional)
-categories:
-  - cat 1
-  - cat 2
----
-# My Blog Post
-
-Some markdown blog post
-
- - One
- - Two
- - Three
-
-A [link](#)
-```
-
-Rendered
+Which, if I were to display the sample blog post from [part 2](/posts/minimal-nextjs-blog-part2-post-links) on the screen, it would look like this:
 
 ![screenshot of sample blog post](/minimal-nextjs-blog-part3-show-post/sample-blog-post-screenshot.png)
 
@@ -120,7 +98,7 @@ As you can see, it's very much not fancy 🤣.
 
 ### Mini refactor
 
-Before I start adding the Next.js functions which power the `[slug].tsx` page, I'll do a mini refactor of the getStaticProps function in the `index.tsx` file so that I can reuse some of the logic (DRY).
+Before I start adding the Next.js functions which power the `[slug].tsx` page, I'll do a mini refactor of the getStaticProps function in the `index.tsx` file so that I can reuse some of its logic (DRY).
 
 I'll change it from
 
@@ -128,9 +106,9 @@ I'll change it from
 export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexProps }> => {
   const files = await readdir(`${process.cwd()}/posts`)
   const blogs = files
-    .filter((fn: string) => fn.endsWith('.md'))
-    .map((fn: string) => {
-      const path = `${process.cwd()}/posts/${fn}`
+    .filter((fileName: string) => fn.endsWith('.md'))
+    .map((fileName: string) => {
+      const path = `${process.cwd()}/posts/${fileName}`
       const { data } = matter(readFileSync(path)
       return { title: data['title'], snippet: data['snippet'] ?? '', slug: data['slug'], categories: data['categories'] ?? [], date: data['date']  }
     })
@@ -143,8 +121,6 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
 to
 
 ```ts
-import { readdir, readFileSync } from 'fs-extra'
-
 export const getPostsMarkdownFileNames = async () => (await readdir(`${process.cwd()}/posts`)).filter((fn: string) => fn.endsWith('.md'))
 
 export const readPostFile = (fileName: string) => readFileSync(`${process.cwd()}/posts/${fileName}`)
@@ -159,8 +135,8 @@ export const extractBlogMeta = (data: { [key: string]: any }) => ({
 
 export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexProps }> => {
   const blogs = (await getPostsMarkdownFileNames()).map((fileName: string) => {
-    const { data, content } = matter(readPostFile(fileName))
-    return extractBlogMeta(data, content)
+    const { data } = matter(readPostFile(fileName))
+    return extractBlogMeta(data)
   })
   return {
     props: { blogs }
@@ -168,7 +144,7 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
 }
 ```
 
-And because webpack is now a little confused and is trying to reference node's FS for the web side of the build, I'll move these shared functions to their own file under a new path `./shared/posts.ts`, leaving me with the following
+Now, because webpack is now a little confused and is trying to reference node's FS for the web side of the build, I'll move these shared functions to their own file under a new path `./shared/posts.ts`, leaving me with the following
 
 **/pages/Index.tsx**
 
@@ -179,7 +155,7 @@ import { GetStaticProps } from 'next'
 import matter from 'gray-matter'
 import { extractBlogMeta, getPostsMarkdownFileNames, readPostFile } from "../shared/posts";
 
-export interface IBlogMeta {
+export interface IBlogMetadata {
   title: string
   snippet: string
   slug: string
@@ -188,7 +164,7 @@ export interface IBlogMeta {
 }
 
 interface IIndexProps {
-  blogs: IBlogMeta[]
+  blogs: IBlogMetadata[]
 }
 
 const IndexPage = (props: IIndexProps) => {
@@ -268,10 +244,9 @@ export const extractBlogMeta = (data: { [key: string]: any }) => ({
 })
 ```
 
-
 ### Page paths
 
-Next.js needs a way to know how many pages exist for this slug, as in order to build a static website, all pages will need to be known about at build/pack time. To do this, I'll define the `getStaticPaths` helper function. It looks like so:
+Next.js needs a way to know how many pages exist for this slug, as in order to build a static website, all pages will need to be known about at build (webpack) time. To do this, I'll define the `getStaticPaths` helper function. It looks like so:
 
 ```ts
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -291,14 +266,14 @@ export const getStaticPaths: GetStaticPaths = async () => {
 }
 ```
 
-This returns information which denotes all the paths under the `blog/*` slug we need to handle in a static manner.
+This returns information which denotes all the paths under the `blog/*` slug that will need to be handled statically.
 
 ### Page content
 
-Now that I've told Next.js how many pages exist under the `blog/*` slug route, I need to tell it what each page's props look like, as Next.js will pass the props to the page component to render the page for the given route. Thankfully, this is, again, pretty easy to do. I'll define my getStaticProps function like so:
+Now I've told Next.js how many pages exist under the `blog/*` slug route, I need to tell it what each page's props look like, as Next.js will pass the props to the page component to render the page for the given route. Thankfully, this is, again, pretty easy to do. I'll define my getStaticProps function like so:
 
 ```ts
-export const getStaticProps: GetStaticProps = async (context): Promise<{ props: BlogPostProps }> => {
+export const getStaticProps: GetStaticProps = async (context): Promise<{ props: IBlogPostProps }> => {
   const slug = context.params!.slug
   const { data, content } = matter(readPostFile(`${slug}.md`))
   const blogMeta = extractBlogMeta(data)
@@ -335,7 +310,7 @@ import { GetStaticProps } from 'next'
 import matter from 'gray-matter'
 import { extractBlogMeta, getPostsMarkdownFileNames, readPostFile } from "../shared/posts";
 
-export interface IBlogMeta {
+export interface IBlogMetadata {
   title: string
   snippet: string
   slug: string
@@ -344,12 +319,12 @@ export interface IBlogMeta {
 }
 
 interface IIndexProps {
-  blogs: IBlogMeta[]
+  blogs: IBlogMetadata[]
 }
 
 const IndexPage = (props: IIndexProps) => {
   const distinctCategories = props.blogs
-    .map((blog) => blog.categories)
+    .map((blogMetadata) => blogMetadata.categories)
     .reduce((acc, val) => [...acc, ...val])
     .filter((value, index, self) => self.indexOf(value) === index)
     .sort((catA: string, catB: string) => catA.localeCompare(catB))
@@ -365,12 +340,12 @@ const IndexPage = (props: IIndexProps) => {
         <h1>Home page</h1>
         <section>
           <h2>Posts</h2>
-          {sortedPosts.map((blog) => (
-            <article key={blog.slug}>
-              <Link href={`/blog/${blog.slug}`}>
-                <a>{blog.title}</a>
+          {sortedPosts.map((blogMetadata) => (
+            <article key={blogMetadata.slug}>
+              <Link href={`/blog/${blogMetadata.slug}`}>
+                <a>{blogMetadata.title}</a>
               </Link>
-              <details>{blog.snippet}</details>
+              <details>{blogMetadata.snippet}</details>
             </article>
           ))}
         </section>
@@ -410,7 +385,7 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
 
 ```jsx
 import React from 'react'
-import { IBlogMeta } from '../index'
+import { IBlogMetadata } from '../index'
 import html from 'remark-html'
 import highlight from 'remark-highlight.js'
 import unified from 'unified'
@@ -419,9 +394,12 @@ import matter from 'gray-matter'
 import { GetStaticProps, GetStaticPaths } from 'next'
 import { extractBlogMeta, getPostsMarkdownFileNames, readPostFile } from "../../shared/posts";
 
-type BlogPostProps = { blogMeta: IBlogMeta; content: string }
+interface IBlogPostProps {
+  blogMeta: IBlogMetadata
+  content: string
+}
 
-const BlogPostPage = (props: BlogPostProps) => {
+const BlogPostPage = (props: IBlogPostProps) => {
   return (
     <>
       <header>
@@ -441,7 +419,7 @@ const BlogPostPage = (props: BlogPostProps) => {
 
 export default BlogPostPage
 
-export const getStaticProps: GetStaticProps = async (context): Promise<{ props: BlogPostProps }> => {
+export const getStaticProps: GetStaticProps = async (context): Promise<{ props: IBlogPostProps }> => {
   const slug = context.params!.slug
   const { data, content } = matter(readPostFile(`${slug}.md`))
   const blogMeta = extractBlogMeta(data)
