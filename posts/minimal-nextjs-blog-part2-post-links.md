@@ -217,7 +217,7 @@ const IndexPage = (props: IIndexProps) => {
           <h2>Categories</h2>
           {distinctCategories.map((category) => (
             <ul key={category}>
-              <Link href={`/category/${category}`}>
+              <Link href={`/blog-category/${category}`}>
                 <a>{category}</a>
               </Link>
             </ul>

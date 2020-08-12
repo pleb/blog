@@ -121,11 +121,12 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
 to
 
 ```ts
-export const getPostsMarkdownFileNames = async () => (await readdir(`${process.cwd()}/posts`)).filter((fn: string) => fn.endsWith('.md'))
+export const getPostsMarkdownFileNames = async (): Promise<string[]> =>
+  (await readdir(`${process.cwd()}/posts`)).filter((fn: string) => fn.endsWith('.md'))
 
-export const readPostFile = (fileName: string) => readFileSync(`${process.cwd()}/posts/${fileName}`)
+export const readPostFile = (fileName: string): Buffer => readFileSync(`${process.cwd()}/posts/${fileName}`)
 
-export const extractBlogMeta = (data: { [key: string]: any }) => ({
+export const extractBlogMeta = (data: { [key: string]: any }): IBlogMetadata => ({
   title: data['title'],
   snippet: data['snippet'] ?? '',
   slug: data['slug'],
@@ -144,7 +145,7 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
 }
 ```
 
-Now, because webpack is now a little confused and is trying to reference node's FS for the web side of the build, I'll move these shared functions to their own file under a new path `./shared/posts.ts`, leaving me with the following
+Now, because webpack is now a little confused and is trying to reference node's FS for the web side of the build, I'll move these shared functions to their own files under the new paths `./shared/posts.ts` and `./shared/build-time/posts.ts`. Using a separate folder for my TS files which hold shared code that is used at build time allows me to split the code nicely, and the pathing should (hopefully) act as a reminder for me to think about where my shared code should live. This also allows webpack to optimise away the code and should a) stop the errors I'm getting about webpack trying to pack node packages into my web build, and b) make for a more efficient build product. So with that in mind, I now have the following: 
 
 **/pages/Index.tsx**
 
@@ -153,7 +154,8 @@ import React from 'react'
 import Link from 'next/link'
 import { GetStaticProps } from 'next'
 import matter from 'gray-matter'
-import { extractBlogMeta, getPostsMarkdownFileNames, readPostFile } from "../shared/posts";
+import { extractBlogMeta } from "../shared/posts";
+import { getPostsMarkdownFileNames, readPostFile } from "../shared/build-time/posts";
 
 export interface IBlogMetadata {
   title: string
@@ -185,12 +187,12 @@ const IndexPage = (props: IIndexProps) => {
         <h1>Home page</h1>
         <section>
           <h2>Posts</h2>
-          {sortedPosts.map((blog) => (
-            <article key={blog.slug}>
-              <Link href={`/blog/${blog.slug}`}>
-                <a>{blog.title}</a>
+          {sortedPosts.map((blogMeta) => (
+            <article key={blogMeta.slug}>
+              <Link href={`/blog/${blogMeta.slug}`}>
+                <a>{blogMeta.title}</a>
               </Link>
-              <details>{blog.snippet}</details>
+              <details>{blogMeta.snippet}</details>
             </article>
           ))}
         </section>
@@ -198,7 +200,7 @@ const IndexPage = (props: IIndexProps) => {
           <h2>Categories</h2>
           {distinctCategories.map((category) => (
             <ul key={category}>
-              <Link href={`/category/${category}`}>
+              <Link href={`/blog-category/${category}`}>
                 <a>{category}</a>
               </Link>
             </ul>
@@ -217,8 +219,8 @@ export default IndexPage
 export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexProps }> => {
   const postFileNames = await getPostsMarkdownFileNames()
   const blogs = postFileNames.map((fileName: string) => {
-    const { data, content } = matter(readPostFile(fileName))
-    return extractBlogMeta(data, content)
+    const { data } = matter(readPostFile(fileName))
+    return extractBlogMeta(data)
   })
   return {
     props: { blogs }
@@ -229,13 +231,9 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
 **/shared/posts.ts**
 
 ```ts
-import { readdir, readFileSync } from 'fs-extra'
+import { IBlogMetadata } from '../pages'
 
-export const getPostsMarkdownFileNames = async () => (await readdir(`${process.cwd()}/posts`)).filter((fn: string) => fn.endsWith('.md'))
-
-export const readPostFile = (fileName: string) => readFileSync(`${process.cwd()}/posts/${fileName}`)
-
-export const extractBlogMeta = (data: { [key: string]: any }) => ({
+export const extractBlogMeta = (data: { [key: string]: any }): IBlogMetadata => ({
   title: data['title'],
   snippet: data['snippet'] ?? '',
   slug: data['slug'],
@@ -244,12 +242,26 @@ export const extractBlogMeta = (data: { [key: string]: any }) => ({
 })
 ```
 
+**/shared/build-time/posts.ts**
+
+```ts
+import { readdir, readFileSync } from 'fs-extra'
+
+export const getPostsMarkdownFileNames = async (): Promise<string[]> =>
+  (await readdir(`${process.cwd()}/posts`)).filter((fn: string) => fn.endsWith('.md'))
+
+export const readPostFile = (fileName: string): Buffer => readFileSync(`${process.cwd()}/posts/${fileName}`)
+```
+
 ### Page paths
 
 Next.js needs a way to know how many pages exist for this slug, as in order to build a static website, all pages will need to be known about at build (webpack) time. To do this, I'll define the `getStaticPaths` helper function. It looks like so:
 
 ```ts
-export const getStaticPaths: GetStaticPaths = async () => {
+export const getStaticPaths: GetStaticPaths = async (): Promise<{
+  paths: Array<string | { params: { slug: string } }>
+  fallback: boolean
+}> => {
   const markdownFileNames = await getPostsMarkdownFileNames()
   const markdownFileNamesWithoutExtensions = markdownFileNames.map((fileName) => fileName.replace('.md', ''))
 
@@ -308,7 +320,8 @@ import React from 'react'
 import Link from 'next/link'
 import { GetStaticProps } from 'next'
 import matter from 'gray-matter'
-import { extractBlogMeta, getPostsMarkdownFileNames, readPostFile } from "../shared/posts";
+import { extractBlogMeta } from "../shared/posts";
+import { getPostsMarkdownFileNames, readPostFile } from "../shared/build-time/posts";
 
 export interface IBlogMetadata {
   title: string
@@ -353,7 +366,7 @@ const IndexPage = (props: IIndexProps) => {
           <h2>Categories</h2>
           {distinctCategories.map((category) => (
             <ul key={category}>
-              <Link href={`/category/${category}`}>
+              <Link href={`/blog-category/${category}`}>
                 <a>{category}</a>
               </Link>
             </ul>
@@ -392,7 +405,8 @@ import unified from 'unified'
 import markdown from 'remark-parse'
 import matter from 'gray-matter'
 import { GetStaticProps, GetStaticPaths } from 'next'
-import { extractBlogMeta, getPostsMarkdownFileNames, readPostFile } from "../../shared/posts";
+import { extractBlogMeta } from "../../shared/posts";
+import { getPostsMarkdownFileNames, readPostFile } from "../../shared/build-time/posts";
 
 interface IBlogPostProps {
   blogMeta: IBlogMetadata
@@ -434,7 +448,10 @@ export const getStaticProps: GetStaticProps = async (context): Promise<{ props: 
   }
 }
 
-export const getStaticPaths: GetStaticPaths = async () => {
+export const getStaticPaths: GetStaticPaths = async (): Promise<{
+  paths: Array<string | { params: { slug: string } }>
+  fallback: boolean
+}> => {
   const markdownFileNames = await getPostsMarkdownFileNames()
   const markdownFileNamesWithoutExtensions = markdownFileNames.map((fileName) => fileName.replace('.md', ''))
 
@@ -454,19 +471,24 @@ export const getStaticPaths: GetStaticPaths = async () => {
 **The full source for /shared/posts.ts**
 
 ```ts
-import { readdir, readFileSync } from 'fs-extra'
-
-export const getPostsMarkdownFileNames = async () => (await readdir(`${process.cwd()}/posts`)).filter((fn: string) => fn.endsWith('.md'))
-
-export const readPostFile = (fileName: string) => readFileSync(`${process.cwd()}/posts/${fileName}`)
-
-export const extractBlogMeta = (data: { [key: string]: any }) => ({
+export const extractBlogMeta = (data: { [key: string]: any }): IBlogMetadata => ({
   title: data['title'],
   snippet: data['snippet'] ?? '',
   slug: data['slug'],
   categories: data['categories'] ?? [],
   date: data['date']
 })
+```
+
+**The full source for /shared/build-time/posts.ts**
+
+```ts
+import { readdir, readFileSync } from 'fs-extra'
+
+export const getPostsMarkdownFileNames = async (): Promise<string[]> =>
+  (await readdir(`${process.cwd()}/posts`)).filter((fn: string) => fn.endsWith('.md'))
+
+export const readPostFile = (fileName: string): Buffer => readFileSync(`${process.cwd()}/posts/${fileName}`)
 ```
 
 **The full source for /types/remark-highlight.js/index.d.ts**

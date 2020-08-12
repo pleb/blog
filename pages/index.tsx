@@ -1,8 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
 import { GetStaticProps } from 'next'
-import matter from 'gray-matter'
-import { extractBlogMeta, getPostsMarkdownFileNames, readPostFile } from '../shared/posts'
+import { getDistinctCategories, sortBlogMetaDescending } from '../shared/posts'
+import { getBlogMetadata } from "../shared/build-time/posts";
 
 export interface IBlogMetadata {
   title: string
@@ -17,13 +17,8 @@ interface IIndexProps {
 }
 
 const IndexPage = (props: IIndexProps) => {
-  const distinctCategories = props.blogs
-    .map((blogMetadata) => blogMetadata.categories)
-    .reduce((acc, val) => [...acc, ...val])
-    .filter((value, index, self) => self.indexOf(value) === index)
-    .sort((catA: string, catB: string) => catA.localeCompare(catB))
-
-  const sortedPosts = props.blogs.sort((blogA, blogB) => new Date(blogB.date).getTime() - new Date(blogA.date).getTime())
+  const distinctCategories = getDistinctCategories(props.blogs)
+  const sortedPosts = sortBlogMetaDescending(props.blogs)
 
   return (
     <>
@@ -47,7 +42,7 @@ const IndexPage = (props: IIndexProps) => {
           <h2>Categories</h2>
           {distinctCategories.map((category) => (
             <ul key={category}>
-              <Link href={`/category/${category}`}>
+              <Link href={`/blog-category/${category}`}>
                 <a>{category}</a>
               </Link>
             </ul>
@@ -64,11 +59,7 @@ const IndexPage = (props: IIndexProps) => {
 export default IndexPage
 
 export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexProps }> => {
-  const postFileNames = await getPostsMarkdownFileNames()
-  const blogs = postFileNames.map((fileName: string) => {
-    const { data } = matter(readPostFile(fileName))
-    return extractBlogMeta(data)
-  })
+  const blogs = await getBlogMetadata()
   return {
     props: { blogs }
   }

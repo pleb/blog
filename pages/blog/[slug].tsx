@@ -6,7 +6,8 @@ import unified from 'unified'
 import markdown from 'remark-parse'
 import matter from 'gray-matter'
 import { GetStaticProps, GetStaticPaths } from 'next'
-import { extractBlogMeta, getPostsMarkdownFileNames, readPostFile } from '../../shared/posts'
+import { extractBlogMeta } from '../../shared/posts'
+import { getPostsMarkdownFileNames, readPostFile } from '../../shared/build-time/posts'
 
 interface IBlogPostProps {
   blogMeta: IBlogMetadata
@@ -36,7 +37,7 @@ export default BlogPostPage
 export const getStaticProps: GetStaticProps = async (context): Promise<{ props: IBlogPostProps }> => {
   const slug = context.params!.slug
   const { data, content } = matter(readPostFile(`${slug}.md`))
-  const blogMeta = extractBlogMeta(data, content)
+  const blogMeta = extractBlogMeta(data)
 
   const result = await unified().use(markdown).use(highlight).use(html).process(content)
 
@@ -48,7 +49,10 @@ export const getStaticProps: GetStaticProps = async (context): Promise<{ props: 
   }
 }
 
-export const getStaticPaths: GetStaticPaths = async () => {
+export const getStaticPaths: GetStaticPaths = async (): Promise<{
+  paths: Array<string | { params: { slug: string } }>
+  fallback: boolean
+}> => {
   const markdownFileNames = await getPostsMarkdownFileNames()
   const markdownFileNamesWithoutExtensions = markdownFileNames.map((fileName) => fileName.replace('.md', ''))
 
