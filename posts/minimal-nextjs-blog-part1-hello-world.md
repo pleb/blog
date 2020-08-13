@@ -11,7 +11,7 @@ categories:
 
 When I say minimal, I may be understating the intent somewhat, so allow me to clarify what I mean. 
 
-My current blog is a WordPress site. Yes, a ubiquitous blogging platform and nothing really of note. So why the change? Well, it's never really felt like a good fit for me. As a developer, I want something more akin to what I'm used to. For instance, I'd like to use source control, and I'd love for my blog to update based on my commits to the Main branch; and possibly a Draft (aka dev) branch. Additionally, I want firm control over the process and tech. A WP site is excellent, but I feel it's overkill for a simple blog and due to its popularity it's a big moving target for hackers. Lastly, a simple factor of the matter is I cannot be bothered keeping on top of the maintenance required to keep it safe, therefore it's only a matter of time before it's defaced by an automated bot of some sort - bah.
+My current blog is a WordPress site. Yes, a ubiquitous blogging platform and nothing really of note. So why the change? Well, it's never really felt like a good fit for me. As a developer, I want something more akin to what I'm used to. For instance, I'd like to use GIT source control, and I'd love for my blog to update based on my commits to the Main branch; and possibly a Draft (aka dev) branch. Additionally, I want firm control over the process and tech. A WP site is excellent, but I feel it's overkill for a simple blog and due to its popularity it's a big moving target for hackers. Lastly, a simple factor of the matter is I cannot be bothered keeping on top of the maintenance required to keep it safe, therefore it's only a matter of time before it's defaced by an automated bot of some sort - bah.
 
 Ok. So time for me to create an MVP list 🤔...
 
@@ -20,7 +20,7 @@ I'll start with what I want from the current WP site
  - Blog tags (View all posts in a category etc.)
  - Miscellaneous pages
 
-and what the features that I currently don't have
+and what features I want and currently don't have
  - Static website (No need for a real backend. Safer from hackers due to neglect)
  - Automatically update when I commit to the Main branch (CI/CD)
  - Markdown support
@@ -34,7 +34,7 @@ npm init --y
 npm install next react react-dom
 ```
 
-Next, I'll add these scripts to the package.json file, as per the [docs](https://nextjs.org/docs/getting-started). 
+Next, I'll add these scripts to the package.json file, as per the [Next.js docs](https://nextjs.org/docs/getting-started). 
 
 ```json
 "scripts": {
@@ -52,22 +52,22 @@ It's pretty easy to add TS support to a project these days. However, for Next.js
 npm install typescript @types/react @types/node --save-dev
 ```
 
-Then I'll add an empty tsconfig.json file... to be continued (Wait for it)
+Then I'll add an empty `tsconfig.json` file... to be continued (Wait for it). The full path is `./tsconfig.json`.
 
 ## Directory structure
 
-Because I can't run Next.js without the pages directory, I'll it and the ones I envisage that I'll need. 
+Because I can't run Next.js without the pages directory, I'll add it, and the ones I envisage that I'll need. 
 
 My folder layout will be like so:
  - pages (react pages. *known Next.js directory*)
  - posts (blog posts in markdown format)
  - public (static files, such as screenshots etc. *known Next.js directory*)
-   - Note: these files are served from /
+   - Note: these files are served from `/`
  - components (react components. *known Next.js directory*)
 
 ## Index page
 
-Obviously, when the project is empty there's nothing to serve so next I'll add my IndexPage component. To do this, I'll create an Index.tsx file under the pages directory with the following component code:
+Obviously, when the project is empty there's nothing to serve so next I'll add my IndexPage component. To do this, I'll create an `index.tsx` file under the pages directory. The full path is `/pages/index.tsx`.
 
 ```jsx
 import React from 'react'
@@ -85,7 +85,7 @@ Ok, so now I should have everything to get a basic page loading. My project is c
 
 ![Project Tree](/minimal-nextjs-blog-part1-hello-world/project-tree.png)
 
-To kick off the dev server it's as simple as running this command, which is, of course, is from the scripts entry I added to the project.json file earlier.
+For me to kick off the dev server I need to run the `dev` command I added in the scripts section earlier.
 
 ```powershell
 npm run dev
@@ -97,15 +97,15 @@ Yay! Some console output. Looking good.
 
 If I navigate to http://localhost:3000 I should see my IndexPage component rendered on the screen.
 
-Brilliant! It works.
-
 ![Webpage screenshot](/minimal-nextjs-blog-part1-hello-world/first-page-load.png)
+
+Brilliant! It works.
 
 ## Finish line
 
 Finished, right? Well almost. If you look carefully at the console output you'll see the Next.js framework has populated the tsconfig.json file with its default. Ah ha, the continuation point from early. See I told you my weird method of adding TS had a purpose. Next, I'll change a few of the defaults to my own preference.
 
-I'll be setting strict to true. You can read more about this change on the [TS Website](https://www.typescriptlang.org/tsconfig#Strict_Type_Checking_Options_6173).
+I'll be setting strict to true. If you want, you can read more about this change on the [TS Website](https://www.typescriptlang.org/tsconfig#Strict_Type_Checking_Options_6173).
 
 ```json
 "strict": true,
@@ -125,9 +125,9 @@ Even the most astute dev leaves unused code lying around sometimes, and well, lu
 "noUnusedLocals": true,
 ```
 
-Nearly there, just one last thing
+Nearly there, just one last thing.
 
-[Prettier](https://prettier.io/) - love it or hate it, it has a purpose, and I love the purpose. Although admittedly for my blog, I don't need prettier, I'm used to it and could not be bothered setting up code formatting in my IDE [Webstorm](https://www.jetbrains.com/webstorm/).
+[Prettier](https://prettier.io/) - love it or hate it, it has a purpose, and I love the purpose. Although admittedly for my blog, I don't need prettier, I'm used to it and could not be bothered setting up code formatting in my IDE [Webstorm](https://www.jetbrains.com/webstorm/). If you're not familiar with prettier, I'd suggest reading their [why page](https://prettier.io/docs/en/why-prettier.html).
 
 To install prettier I'll simply run this NPM command.
 
@@ -135,7 +135,7 @@ To install prettier I'll simply run this NPM command.
 npm install prettier --save-dev
 ```
 
-Then add my configuration to the `.prettierrc.json` file. Here are my usual values:
+Then add my configuration to the `.prettierrc.json` file along with my own preferences. The full path is `/.prettierrc.json`.
 
 ```json
 {
@@ -154,4 +154,4 @@ Yay. FINISHED!
 
 ---
 
-In [part 2](/posts/minimal-nextjs-blog-part1-hello-world) I'll be rendering a list of posts and categories to the screen. Don't miss it, as it's going to be amazing (Self Certified)
+In [part 2](/posts/minimal-nextjs-blog-part1-hello-world) I'll be rendering a list of posts and categories to the screen. Don't miss it, as it's going to be amazing (Self Certified).
