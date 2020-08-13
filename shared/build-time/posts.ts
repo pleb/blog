@@ -8,13 +8,13 @@ export const getPostsMarkdownFileNames = async (): Promise<string[]> =>
 
 export const readPostFile = (fileName: string): Buffer => readFileSync(`${process.cwd()}/posts/${fileName}`)
 
-export const getBlogMetadata = async (filterCategory?: string): Promise<IBlogMetadata[]> => {
+export const getBlogMetadata = async (filterCategorySlug?: string): Promise<IBlogMetadata[]> => {
   const postFileNames = await getPostsMarkdownFileNames()
   const blogMetadata = postFileNames.map((fileName: string) => {
     const { data } = matter(readPostFile(fileName))
     return extractBlogMeta(data)
   })
-  return !filterCategory
+  return !filterCategorySlug
     ? blogMetadata
-    : blogMetadata.filter((blogMetadata) => blogMetadata.categories.some((c) => c.toLowerCase() == filterCategory.toLowerCase()))
+    : blogMetadata.filter((blogMetadata) => blogMetadata.categories.some((c) => c.slug === filterCategorySlug))
 }

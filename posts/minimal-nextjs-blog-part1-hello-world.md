@@ -4,9 +4,9 @@ slug: minimal-nextjs-blog-part1-hello-world
 date: August 6, 2020
 snippet: Building a static blog 
 categories:
-  - next.js
-  - blogging
-  - react
+  - Next.js
+  - Blogging
+  - React
 ---
 
 When I say minimal, I may be understating the intent somewhat, so allow me to clarify what I mean. 

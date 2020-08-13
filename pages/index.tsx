@@ -2,15 +2,17 @@ import React from 'react'
 import Link from 'next/link'
 import { GetStaticProps } from 'next'
 import { getDistinctCategories, sortBlogMetaDescending } from '../shared/posts'
-import { getBlogMetadata } from "../shared/build-time/posts";
+import { getBlogMetadata } from '../shared/build-time/posts'
 
 export interface IBlogMetadata {
   title: string
   snippet: string
   slug: string
-  categories: string[]
+  categories: IBlogCategory[]
   date: string
 }
+
+export interface IBlogCategory { name: string; slug: string }
 
 interface IIndexProps {
   blogs: IBlogMetadata[]
@@ -41,9 +43,9 @@ const IndexPage = (props: IIndexProps) => {
         <section>
           <h2>Categories</h2>
           {distinctCategories.map((category) => (
-            <ul key={category}>
-              <Link href={`/blog-category/${category}`}>
-                <a>{category}</a>
+            <ul key={category.slug}>
+              <Link href={`/blog-category/${category.slug}`}>
+                <a>{category.name}</a>
               </Link>
             </ul>
           ))}
