@@ -16,7 +16,7 @@ Part 2 is about rendering a list of links to posts to the browser screen. Althou
 
 ## Static Props (Pre-work)
 
-What exactly are static props? The official docs can be read [here](https://nextjs.org/docs/basic-features/data-fetching#getstaticprops-static-generation) but to summarise it, I can use static props to gather data at build (webpack) time, which in the case of this blog will be reading and processing of files from the file system. However, if I wasn't building a filesystem based blog, this could be querying a database or API etc.
+What exactly are static props? The official docs can be read [here](https://nextjs.org/docs/basic-features/data-fetching#getstaticprops-static-generation), but to summarise it, I can use static props to gather data at build (webpack) time, which in the case of this blog will be reading and processing of files from the file system. However, if I wasn't building a filesystem based blog, this could be querying a database or API etc.
 
 To do this, I'll add a getStaticProps function to the `index.tsx` file. Although before I do that, I'll define a few types, and I'll update my IndexPage component to render both a list of post links and post categories.
 
@@ -93,7 +93,7 @@ const IndexPage = (props: IIndexProps) => {
 }
 ```
 
-As you can see, I take the input and create two collections, one being a distinct list of categories, and the other is all the posts order by their date descending. Then I simply render it to the screen. I'm not going to lie, it's not going to be pretty 😀, but it will be functional, and I'll do all the UI work in one step once I have everything working.
+As you can see, I take the input and create two collections, one being a distinct list of categories, and the other is all the posts order by their date descending. Then I simply render it to the screen. I'm not going to lie, it's not going to be pretty 😀, but it will be functional. I'll do all the UI work in one step, later on, once I have everything working.
 
 ## Static Props
 
@@ -121,21 +121,9 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
 }
 ```
 
-In this function, I simply query the file system for all files under the `/posts` directory and then parse the matadata content to create the props object. There's nothing here that's all that complex, but as you can see getStaticProps is a powerful feature. 
+In this function, I simply query the file system for all files under the `./posts` directory and then parse the metadata content to create the props object. There's nothing here that's all that complex, but as you can see getStaticProps is a powerful feature. 
 
-With all this combined, my browser page now looks like this:
-
-![web screenshot](/minimal-nextjs-blog-part2-post-links/web-screenshot.png)
-
-## How does this work
-
-When processing the files found under the `/posts` directory, I use Gray Matter to parse the files into Metadata and Content. See:
-
-```ts
-const { data, content } = matter(readFileSync(path))
-```
-
-To supply the metadata I define it in the top of each blog post file. For example, here's a sample blog post:
+I'll quickly add a smaple blog post, as I imagine testing without one will be somewhat hard. So I'll a few of these with different dates for testing purposes.
 
 ```text
 ---
@@ -158,6 +146,34 @@ Some markdown blog post
 A [link](#)
 ```
 
+With all this combined, if run the dev server and refresh my browser page, it now looks like this.
+
+![web screenshot](/minimal-nextjs-blog-part2-post-links/web-screenshot.png)
+
+## How does this work
+
+When processing the files found under the `/posts` directory, I use Gray Matter to parse the files into Metadata and Content.
+
+```ts
+const { data, content } = matter(readFileSync(path))
+```
+
+To supply the metadata I define it in the top of each blog post file. For example, here's the metadata from my sample blog post.
+
+```text
+---
+title: My blog post title
+slug: my-blog-post-slug
+date: August 7, 2020
+snippet: This is a blog post snippet (optional)
+categories:
+  - cat 1
+  - cat 2
+---
+```
+
+And the rest of the post is the content, in the format of markdown.
+
 That's it, such a simple way of writing a blog post - no database required.
 
 ---
@@ -169,10 +185,11 @@ In [part 3](/posts/minimal-nextjs-blog-part3-show-post) I'll be rendering a sing
 **The full source for /pages/index.tsx**
 
 ```ts
-import Link from "next/link";
-import { GetStaticProps } from "next";
-import { readdir, readFileSync } from "fs-extra";
-import matter from "gray-matter";
+import React from 'react'
+import Link from 'next/link'
+import { GetStaticProps } from 'next'
+import { readdir, readFileSync } from 'fs-extra'
+import matter from 'gray-matter'
 
 export interface IBlogMetadata {
   title: string
@@ -188,10 +205,10 @@ interface IIndexProps {
 
 const IndexPage = (props: IIndexProps) => {
   const distinctCategories = props.blogs
-  .map((blogMetadata) => blogMetadata.categories)
-  .reduce((acc, val) => ([...acc, ...val]))
-  .filter((value, index, self) => self.indexOf(value) === index)
-  .sort((catA: string, catB: string) => catA.localeCompare(catB))
+    .map((blogMetadata) => blogMetadata.categories)
+    .reduce((acc, val) => [...acc, ...val])
+    .filter((value, index, self) => self.indexOf(value) === index)
+    .sort((catA: string, catB: string) => catA.localeCompare(catB))
 
   const sortedPosts = props.blogs.sort((blogA, blogB) => new Date(blogB.date).getTime() - new Date(blogA.date).getTime())
 
@@ -236,12 +253,18 @@ export default IndexPage
 export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexProps }> => {
   const files = await readdir(`${process.cwd()}/posts`)
   const blogs = files
-  .filter((fileName: string) => fn.endsWith('.md'))
-  .map((fileName: string) => {
-    const path = `${process.cwd()}/posts/${fileName}`
-    const { data } = matter(readFileSync(path))
-    return { title: data['title'], snippet: data['snippet'] ?? '', slug: data['slug'], categories: data['categories'] ?? [], date: data['date']  }
-  })
+    .filter((fileName: string) => fileName.endsWith('.md'))
+    .map((fileName: string) => {
+      const path = `${process.cwd()}/posts/${fileName}`
+      const { data } = matter(readFileSync(path))
+      return {
+        title: data['title'],
+        snippet: data['snippet'] ?? '',
+        slug: data['slug'],
+        categories: data['categories'] ?? [],
+        date: data['date']
+      }
+    })
   return {
     props: { blogs }
   }

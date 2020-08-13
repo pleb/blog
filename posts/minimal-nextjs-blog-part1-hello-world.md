@@ -139,7 +139,7 @@ Then add my configuration to the `.prettierrc.json` file along with my own prefe
 
 ```json
 {
-  "semi":  true,
+  "semi":  false,
   "trailingComma":  "none",
   "singleQuote":  true,
   "printWidth":  140,
