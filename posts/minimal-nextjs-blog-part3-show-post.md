@@ -182,7 +182,7 @@ export const readPostFile = (fileName: string): Buffer => readFileSync(`${proces
 
 ### Page paths
 
-Next.js needs a way to know how many pages exist for this slug, as in order to build a static website, all pages will need to be known about at build (webpack) time. To do this, I'll define the `getStaticPaths` helper function for my `/pages/blog/[slug].tsx` file.
+Next.js needs a way to know how many pages exist for this slug, as in order to build a static website, all pages will need to be known about at build (webpack) time. To do this, I'll define the `getStaticPaths` helper function for my `/pages/blog/[slug].tsx` file. As part the contract for getStaticPaths, I will return a collection of the possible blog slugs. 
 
 ```ts
 export const getStaticPaths: GetStaticPaths = async (): Promise<{
@@ -205,11 +205,9 @@ export const getStaticPaths: GetStaticPaths = async (): Promise<{
 }
 ```
 
-This returns information which denotes all the paths under the `blog/*` slug that will need to be handled statically.
-
 ### Page content
 
-Now I've told Next.js how many pages exist under the `blog/*` slug route, I need to tell it what each page's props look like, as Next.js will pass the props to the page component to render the page for the given route. Thankfully, this is, again, pretty easy to do. I'll define my getStaticProps function like so:
+Now I've told Next.js how many pages exist under the `blog/*` slug route, I need to tell it what each page's props look like, as Next.js will pass the props to the page component to render the page for the given slug. Thankfully, this is pretty easy to do. I'll define my getStaticProps function which inspects the passed in blog slug and returns an instance of the corresponding React component props.
 
 ```ts
 export const getStaticProps: GetStaticProps = async (context): Promise<{ props: IBlogPostProps }> => {
@@ -251,8 +249,8 @@ import React from 'react'
 import Link from 'next/link'
 import { GetStaticProps } from 'next'
 import matter from 'gray-matter'
-import { extractBlogMeta } from "../shared/posts";
-import { getPostsMarkdownFileNames, readPostFile } from "../shared/build-time/posts";
+import { getPostsMarkdownFileNames, readPostFile } from '../shared/build-time/posts'
+import { extractBlogMeta } from '../shared/posts'
 
 export interface IBlogMetadata {
   title: string
@@ -314,8 +312,7 @@ const IndexPage = (props: IIndexProps) => {
 export default IndexPage
 
 export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexProps }> => {
-  const postFileNames = await getPostsMarkdownFileNames()
-  const blogs = postFileNames.map((fileName: string) => {
+  const blogs = (await getPostsMarkdownFileNames()).map((fileName: string) => {
     const { data } = matter(readPostFile(fileName))
     return extractBlogMeta(data)
   })
@@ -328,16 +325,15 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
 **The full source for /pages/blog/[slug].tsx**
 
 ```jsx
-import React from 'react'
 import { IBlogMetadata } from '../index'
-import html from 'remark-html'
+import { getPostsMarkdownFileNames, readPostFile } from '../../shared/build-time/posts'
+import { GetStaticPaths, GetStaticProps } from 'next'
 import highlight from 'remark-highlight.js'
-import unified from 'unified'
+import { extractBlogMeta } from '../../shared/posts'
 import markdown from 'remark-parse'
 import matter from 'gray-matter'
-import { GetStaticProps, GetStaticPaths } from 'next'
-import { extractBlogMeta } from "../../shared/posts";
-import { getPostsMarkdownFileNames, readPostFile } from "../../shared/build-time/posts";
+import unified from 'unified'
+import html from 'remark-html'
 
 interface IBlogPostProps {
   blogMeta: IBlogMetadata
@@ -402,6 +398,8 @@ export const getStaticPaths: GetStaticPaths = async (): Promise<{
 **The full source for /shared/posts.ts**
 
 ```ts
+import { IBlogMetadata } from '../pages'
+
 export const extractBlogMeta = (data: { [key: string]: any }): IBlogMetadata => ({
   title: data['title'],
   snippet: data['snippet'] ?? '',
