@@ -12,7 +12,7 @@ categories:
 
 ---
 
-Part 2 is about rendering a list of links to posts to the browser screen. Although initially, you might be thinking - hey that's not very hard - bear in mind that I'm building a static site with no real backend, all this is decided at build (webpack) time. Such is the power of [Next.js](https://nextjs.org).
+Part 2, Welcome. In this part I will be rendering a list of links to posts to the browser screen. Although initially, you might be thinking - hey that's not very hard - bear in mind that I'm building a static site with no real backend, all this is decided at build (webpack) time. Such is the power of [Next.js](https://nextjs.org).
 
 ## Static Props (Pre-work)
 
