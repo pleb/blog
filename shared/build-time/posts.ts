@@ -1,7 +1,7 @@
 import { readdir, readFileSync } from 'fs-extra'
-import { IBlogMetadata } from '../../pages'
 import matter from 'gray-matter'
-import { extractBlogMeta } from "../posts";
+import { IBlogMetadata } from '../../pages'
+import { extractBlogMeta } from '../posts'
 
 export const getPostsMarkdownFileNames = async (): Promise<string[]> =>
   (await readdir(`${process.cwd()}/posts`)).filter((fn: string) => fn.endsWith('.md'))

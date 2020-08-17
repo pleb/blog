@@ -12,7 +12,7 @@ export const getDistinctCategories = (blogMetadata: IBlogMetadata[]): IBlogCateg
   blogMetadata
     .map((blogMetadata) => blogMetadata.categories)
     .reduce((acc, val) => [...acc, ...val])
-    .filter((value, index, self) => self.findIndex(bc => bc.slug === value.slug) === index)
+    .filter((value, index, self) => self.findIndex((bc) => bc.slug === value.slug) === index)
     .sort((catA: IBlogCategory, catB: IBlogCategory) => catA.slug.localeCompare(catB.slug))
 
 export const sortBlogMetaDescending = (meta: IBlogMetadata[]): IBlogMetadata[] =>

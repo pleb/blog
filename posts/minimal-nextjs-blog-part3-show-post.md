@@ -59,7 +59,7 @@ First, I'll add the specially named file `[slug].tsx` under the folder `blog` in
 
 A blog page, of course, will be a new React component, so I'll define that first. I'll start with my props type.
 
-```jsx
+```ts
 interface IBlogPostProps {
   blogMeta: IBlogMetadata
   content: string
@@ -70,7 +70,7 @@ There's not much too it, and I've even reused the `IBlogMetadata` type defined i
 
 Then I'll define a component to render the blog to the browser screen. I won't do anything fancy yet, as like in the index page, my aim is to simply render the content to the screen.
 
-```jsx
+```tsx
 const BlogPostPage = (props: IBlogPostProps) => {
   return (
     <>
@@ -210,7 +210,7 @@ export const getStaticPaths: GetStaticPaths = async (): Promise<{
 Now I've told Next.js how many pages exist under the `blog/*` slug route, I need to tell it what each page's props look like, as Next.js will pass the props to the page component to render the page for the given slug. Thankfully, this is pretty easy to do. I'll define my getStaticProps function which inspects the passed in blog slug and returns an instance of the corresponding React component props.
 
 ```ts
-export const getStaticProps: GetStaticProps = async (context): Promise<{ props: IBlogPostProps }> => {
+export const getStaticProps: GetStaticProps = async (context: GetStaticPropsContext): Promise<{ props: IBlogPostProps }> => {
   const slug = context.params!.slug
   const { data, content } = matter(readPostFile(`${slug}.md`))
   const blogMeta = extractBlogMeta(data)
@@ -238,13 +238,13 @@ As you can see, it's very much not fancy 🤣. Additionally, here's a little dem
 
 ---
 
-In [part 4](/posts/minimal-nextjs-blog-part4-show-category-list) I'll be rendering a list of posts within a category, and like this part, it's going to be amazing (Again, Self Certified)
+In [part 4](/posts/minimal-nextjs-blog-part4-show-category-list) I'll be rendering a list of posts within a category. Like this part, it's going to be amazing (Again, Self Certified).
 
 ## Source
 
 **The full source for /pages/index.tsx**
 
-```jsx
+```tsx
 import React from 'react'
 import Link from 'next/link'
 import { GetStaticProps } from 'next'
@@ -324,10 +324,10 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
 
 **The full source for /pages/blog/[slug].tsx**
 
-```jsx
+```tsx
 import { IBlogMetadata } from '../index'
 import { getPostsMarkdownFileNames, readPostFile } from '../../shared/build-time/posts'
-import { GetStaticPaths, GetStaticProps } from 'next'
+import { GetStaticPaths, GetStaticProps, GetStaticPropsContext } from 'next'
 import highlight from 'remark-highlight.js'
 import { extractBlogMeta } from '../../shared/posts'
 import markdown from 'remark-parse'
@@ -360,7 +360,7 @@ const BlogPostPage = (props: IBlogPostProps) => {
 
 export default BlogPostPage
 
-export const getStaticProps: GetStaticProps = async (context): Promise<{ props: IBlogPostProps }> => {
+export const getStaticProps: GetStaticProps = async (context: GetStaticPropsContext): Promise<{ props: IBlogPostProps }> => {
   const slug = context.params!.slug
   const { data, content } = matter(readPostFile(`${slug}.md`))
   const blogMeta = extractBlogMeta(data)

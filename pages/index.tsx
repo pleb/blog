@@ -12,7 +12,10 @@ export interface IBlogMetadata {
   date: string
 }
 
-export interface IBlogCategory { name: string; slug: string }
+export interface IBlogCategory {
+  name: string
+  slug: string
+}
 
 interface IIndexProps {
   blogs: IBlogMetadata[]

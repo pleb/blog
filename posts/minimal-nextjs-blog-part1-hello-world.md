@@ -69,7 +69,7 @@ My folder layout will be like so:
 
 Obviously, when the project is empty there's nothing to serve so next I'll add my IndexPage component. To do this, I'll create an `index.tsx` file under the pages directory. The full path is `/pages/index.tsx`.
 
-```jsx
+```tsx
 import React from 'react'
 
 const IndexPage = () => <div>Hello World</div>

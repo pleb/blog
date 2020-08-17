@@ -22,7 +22,7 @@ To do this, I'll add a getStaticProps function to the `index.tsx` file. Although
 
 A blog page needs some metadata to describe the content, it's a given right? Well, for this I'll define a type `IBlogMetadata` and it'll look like this:
 
-```TS
+```ts
 export interface IBlogMetadata {
   title: string
   snippet: string
@@ -38,7 +38,7 @@ Although categories are somewhat optional, I won't denote it as such, aka `?`, a
 
 Ah, I need some props for my `IndexPage` component, and as most would have guessed by now, it's going to contain a collection of blog posts in the form of `IBlogMetadata[]`. This will do it:
 
-```TS
+```ts
 interface IIndexProps {
   blogs: IBlogMetadata[]
 }
@@ -46,7 +46,7 @@ interface IIndexProps {
 
 Now I'll update my `IndexPage` component to render posts and categories, but as this won't be the final version, as my aim is simply to dump stuff to the screen: 
 
-```jsx
+```tsx
 const IndexPage = (props: IIndexProps) => {
   const distinctCategories = props.blogs
     .map((blogMetadata) => blogMetadata.categories)
@@ -178,13 +178,13 @@ That's it, such a simple way of writing a blog post - no database required.
 
 ---
 
-In [part 3](/posts/minimal-nextjs-blog-part3-show-post) I'll be rendering a single blog post to the screen, and like this part, it's going to be amazing (Again, Self Certified)
+In [part 3](/posts/minimal-nextjs-blog-part3-show-post) I'll be rendering a single blog post to the screen. Like this part, it's going to be amazing (Again, Self Certified).
 
 ## Source
 
 **The full source for /pages/index.tsx**
 
-```ts
+```tsx
 import React from 'react'
 import Link from 'next/link'
 import { GetStaticProps } from 'next'
