@@ -1,11 +1,11 @@
 import React from 'react'
-import { IBlogMetadata } from '../index'
 import html from 'remark-html'
 import highlight from 'remark-highlight.js'
 import unified from 'unified'
 import markdown from 'remark-parse'
 import matter from 'gray-matter'
-import { GetStaticProps, GetStaticPaths } from 'next'
+import { IBlogMetadata } from '../index'
+import { GetStaticProps, GetStaticPaths, GetStaticPropsContext } from 'next'
 import { extractBlogMeta } from '../../shared/posts'
 import { getPostsMarkdownFileNames, readPostFile } from '../../shared/build-time/posts'
 
@@ -34,7 +34,7 @@ const BlogPostPage = (props: IBlogPostProps) => {
 
 export default BlogPostPage
 
-export const getStaticProps: GetStaticProps = async (context): Promise<{ props: IBlogPostProps }> => {
+export const getStaticProps: GetStaticProps = async (context: GetStaticPropsContext): Promise<{ props: IBlogPostProps }> => {
   const slug = context.params!.slug
   const { data, content } = matter(readPostFile(`${slug}.md`))
   const blogMeta = extractBlogMeta(data)

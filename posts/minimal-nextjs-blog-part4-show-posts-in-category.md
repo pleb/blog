@@ -152,7 +152,7 @@ export interface IBlogMetadata {
 
 Next I need to alter where I render categories to the screen in the `/pages/index.tsx`, which this changes from
 
-```jsx
+```tsx
 <h2>Categories</h2>
   {distinctCategories.map((category) => (
   <ul key={category}>
@@ -165,7 +165,7 @@ Next I need to alter where I render categories to the screen in the `/pages/inde
 
 to
 
-```jsx
+```tsx
 <h2>Categories</h2>
   {distinctCategories.map((category) => (
   <ul key={category.slug}>
@@ -239,10 +239,257 @@ My categories now look like they always have, but importantly, my category URLs 
 
 Thankfully, the refactoring and fixing the category verse category slug change was the hardest part of the showing blogs posts in a category. As I stated earlier, this page's functionality is a mix-up of the `/pages/index.tsx` and the `/pages/blog/[slug].tsx`.  
 
-First, I'll lay down my `BlogCategory` component. As you can probably guess, a new component, with new props, and minimal output to the screen.
+First, I'll lay down my `BlogCategory` component. As you can probably guess, a new component with new props, and minimal output to the screen.
 
+```tsx
+interface IBlogCategoryProps {
+  category: string
+  blogs: IBlogMetadata[]
+}
 
-```jsx
+const BlogCategory = (props: IBlogCategoryProps) => {
+  const sortedPosts = sortBlogMetaDescending(props.blogs)
+
+  return (
+    <>
+      <header>
+        <p>My Blog</p>
+      </header>
+      <main>
+        <h1>Category {props.category}</h1>
+        <section>
+          <h2>Posts</h2>
+          {sortedPosts.map((blog) => (
+            <article key={blog.slug}>
+              <Link href={`/blog/${blog.slug}`}>
+                <a>{blog.title}</a>
+              </Link>
+              <details>{blog.snippet}</details>
+            </article>
+          ))}
+        </section>
+      </main>
+      <footer>
+        <p>Author: Wade Baglin</p>
+      </footer>
+    </>
+  )
+}
+```
+
+Next, I'll define the `getStaticPaths` function, which as you might remember, is a way for me to tell Next.js all the static paths that exist for this slug. For this component it's a one-to-one mapping of a distinct list of categories.
+
+```ts
+export const getStaticPaths: GetStaticPaths = async (): Promise<{
+  paths: Array<string | { params: { slug: string } }>
+  fallback: boolean
+}> => {
+  const blogMetadata = await getBlogMetadata()
+  const distinctCategories = getDistinctCategories(blogMetadata)
+
+  return {
+    paths: distinctCategories.map((category) => {
+      return {
+        params: {
+          slug: category.slug
+        }
+      }
+    }),
+    fallback: false
+  }
+}
+```
+
+As you can see, with the refactoring I did beforehand, this is now pretty straight forward. Next.js, of course, will use this information to generate a list of static props, so I'll define that function now.
+
+```ts
+export const getStaticProps: GetStaticProps = async (context: GetStaticPropsContext): Promise<{ props: IBlogCategoryProps }> => {
+  const category = context.params!.slug as string
+  const blogMetadata = await getBlogMetadata(category)
+
+  return {
+    props: {
+      category,
+      blogs: blogMetadata
+    }
+  }
+}
+```
+
+Done. This function simply takes a category and returns the props (a list of blogs for the selected category) which is then used by my `BlogCategory` component to render the blogs within a category to the screen. Nice 👍
+
+## Demo
+
+When I fire up the dev server and point my browser to it, I can now see all the blog posts within a category.
+
+![demo of showing blog posts within a category](/minimal-nextjs-blog-part4-show-posts-in-category/demo.gif)
+
+---
+
+In [part 5](/posts/minimal-nextjs-blog-part5-miscellaneous-pages) I'll be adding support for miscellaneous pages. Like this part, it's going to be amazing (Again, Self Certified).
+
+## Source
+
+**The full source for /pages/index.tsx**
+
+```tsx
+import React from 'react'
+import Link from 'next/link'
+import { GetStaticProps } from 'next'
+import { getDistinctCategories, sortBlogMetaDescending } from '../shared/posts'
+import { getBlogMetadata } from '../shared/build-time/posts'
+
+export interface IBlogMetadata {
+  title: string
+  snippet: string
+  slug: string
+  categories: IBlogCategory[]
+  date: string
+}
+
+export interface IBlogCategory {
+  name: string
+  slug: string
+}
+
+interface IIndexProps {
+  blogs: IBlogMetadata[]
+}
+
+const IndexPage = (props: IIndexProps) => {
+  const distinctCategories = getDistinctCategories(props.blogs)
+  const sortedPosts = sortBlogMetaDescending(props.blogs)
+
+  return (
+    <>
+      <header>
+        <p>My Blog</p>
+      </header>
+      <main>
+        <h1>Home page</h1>
+        <section>
+          <h2>Posts</h2>
+          {sortedPosts.map((blogMetadata) => (
+            <article key={blogMetadata.slug}>
+              <Link href={`/blog/${blogMetadata.slug}`}>
+                <a>{blogMetadata.title}</a>
+              </Link>
+              <details>{blogMetadata.snippet}</details>
+            </article>
+          ))}
+        </section>
+        <section>
+          <h2>Categories</h2>
+          {distinctCategories.map((category) => (
+            <ul key={category.slug}>
+              <Link href={`/blog-category/${category.slug}`}>
+                <a>{category.name}</a>
+              </Link>
+            </ul>
+          ))}
+        </section>
+      </main>
+      <footer>
+        <p>Author: Wade Baglin</p>
+      </footer>
+    </>
+  )
+}
+
+export default IndexPage
+
+export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexProps }> => {
+  const blogs = await getBlogMetadata()
+  return {
+    props: { blogs }
+  }
+}
+```
+
+**The full source for /pages/blog/[slug].tsx**
+
+```tsx
+import React from 'react'
+import html from 'remark-html'
+import highlight from 'remark-highlight.js'
+import unified from 'unified'
+import markdown from 'remark-parse'
+import matter from 'gray-matter'
+import { IBlogMetadata } from '../index'
+import { GetStaticProps, GetStaticPaths, GetStaticPropsContext } from 'next'
+import { extractBlogMeta } from '../../shared/posts'
+import { getPostsMarkdownFileNames, readPostFile } from '../../shared/build-time/posts'
+
+interface IBlogPostProps {
+  blogMeta: IBlogMetadata
+  content: string
+}
+
+const BlogPostPage = (props: IBlogPostProps) => {
+  return (
+    <>
+      <header>
+        <p>My Blog</p>
+      </header>
+      <main>
+        <h1>{props.blogMeta.title}</h1>
+        <section dangerouslySetInnerHTML={{ __html: props.content }}></section>
+        <p>Date {props.blogMeta.date}</p>
+      </main>
+      <footer>
+        <p>Author: Wade Baglin</p>
+      </footer>
+    </>
+  )
+}
+
+export default BlogPostPage
+
+export const getStaticProps: GetStaticProps = async (context: GetStaticPropsContext): Promise<{ props: IBlogPostProps }> => {
+  const slug = context.params!.slug
+  const { data, content } = matter(readPostFile(`${slug}.md`))
+  const blogMeta = extractBlogMeta(data)
+
+  const result = await unified().use(markdown).use(highlight).use(html).process(content)
+
+  return {
+    props: {
+      blogMeta,
+      content: result.toString()
+    }
+  }
+}
+
+export const getStaticPaths: GetStaticPaths = async (): Promise<{
+  paths: Array<string | { params: { slug: string } }>
+  fallback: boolean
+}> => {
+  const markdownFileNames = await getPostsMarkdownFileNames()
+  const markdownFileNamesWithoutExtensions = markdownFileNames.map((fileName) => fileName.replace('.md', ''))
+
+  return {
+    paths: markdownFileNamesWithoutExtensions.map((slug) => {
+      return {
+        params: {
+          slug: slug
+        }
+      }
+    }),
+    fallback: false
+  }
+}
+```
+
+**The full source for /pages/blog-category/[slug].tsx**
+
+```tsx
+import React from 'react'
+import Link from 'next/link'
+import { IBlogMetadata } from '../index'
+import { GetStaticProps, GetStaticPaths, GetStaticPropsContext } from 'next'
+import { getDistinctCategories, sortBlogMetaDescending } from '../../shared/posts'
+import { getBlogMetadata } from '../../shared/build-time/posts'
+
 interface IBlogCategoryProps {
   category: string
   blogs: IBlogMetadata[]
@@ -277,4 +524,87 @@ const BlogCategory = (props: IBlogCategoryProps) => {
   )
 }
 
+export default BlogCategory
+
+export const getStaticProps: GetStaticProps = async (context: GetStaticPropsContext): Promise<{ props: IBlogCategoryProps }> => {
+  const category = context.params!.slug as string
+  const blogMetadata = await getBlogMetadata(category)
+
+  return {
+    props: {
+      category,
+      blogs: blogMetadata
+    }
+  }
+}
+
+export const getStaticPaths: GetStaticPaths = async (): Promise<{
+  paths: Array<string | { params: { slug: string } }>
+  fallback: boolean
+}> => {
+  const blogMetadata = await getBlogMetadata()
+  const distinctCategories = getDistinctCategories(blogMetadata)
+
+  return {
+    paths: distinctCategories.map((category) => {
+      return {
+        params: {
+          slug: category.slug
+        }
+      }
+    }),
+    fallback: false
+  }
+}
+```
+
+**The full source for /shared/posts.ts**
+
+```ts
+import { IBlogCategory, IBlogMetadata } from '../pages'
+
+export const extractBlogMeta = (data: { [key: string]: any }): IBlogMetadata => ({
+  title: data['title'],
+  snippet: data['snippet'] ?? '',
+  slug: data['slug'],
+  categories: (data['categories'] ?? []).map((c: string) => ({ name: c, slug: sanitiseCategory(c) })),
+  date: data['date']
+})
+
+export const getDistinctCategories = (blogMetadata: IBlogMetadata[]): IBlogCategory[] =>
+  blogMetadata
+    .map((blogMetadata) => blogMetadata.categories)
+    .reduce((acc, val) => [...acc, ...val])
+    .filter((value, index, self) => self.findIndex((bc) => bc.slug === value.slug) === index)
+    .sort((catA: IBlogCategory, catB: IBlogCategory) => catA.slug.localeCompare(catB.slug))
+
+export const sortBlogMetaDescending = (meta: IBlogMetadata[]): IBlogMetadata[] =>
+  meta.sort((blogA, blogB) => new Date(blogB.date).getTime() - new Date(blogA.date).getTime())
+
+export const sanitiseCategory = (category: string): string => category.replace(/([^a-z0-9\-])+/gi, '-').toLowerCase()
+```
+
+**The full source for /shared/build-time/posts.ts**
+
+```ts
+import { readdir, readFileSync } from 'fs-extra'
+import matter from 'gray-matter'
+import { IBlogMetadata } from '../../pages'
+import { extractBlogMeta } from '../posts'
+
+export const getPostsMarkdownFileNames = async (): Promise<string[]> =>
+  (await readdir(`${process.cwd()}/posts`)).filter((fn: string) => fn.endsWith('.md'))
+
+export const readPostFile = (fileName: string): Buffer => readFileSync(`${process.cwd()}/posts/${fileName}`)
+
+export const getBlogMetadata = async (filterCategorySlug?: string): Promise<IBlogMetadata[]> => {
+  const postFileNames = await getPostsMarkdownFileNames()
+  const blogMetadata = postFileNames.map((fileName: string) => {
+    const { data } = matter(readPostFile(fileName))
+    return extractBlogMeta(data)
+  })
+  return !filterCategorySlug
+    ? blogMetadata
+    : blogMetadata.filter((blogMetadata) => blogMetadata.categories.some((c) => c.slug === filterCategorySlug))
+}
 ```
