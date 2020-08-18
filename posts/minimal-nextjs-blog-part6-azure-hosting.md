@@ -95,3 +95,11 @@ After a few minutes I get an email saying my site is ready... It is 🎉.
 See I told you it was easy. The best part is that whenever I commit to the main branch, the Github Action will run and publish the new version to my Azure Static Web App. I was even able to point a custom domain to it and surprisingly SSL came included too.
 
 ![My blog running on an Azure hosted static web app accessed via a custom domain](/minimal-nextjs-blog-part6-azure-hosting/custom-domain.png)
+
+But wait! There's more. When I make a PR in Github to the main branch, guess what? That's right, the friendly github-actions bot deploys a staging site with the changes from my PR 🤯.
+
+![Github actions pr bot](/minimal-nextjs-blog-part6-azure-hosting/github-actions-pr-bot.png)
+
+---
+
+In [part 7](/posts/minimal-nextjs-blog-part6-react-components) I'll be updating the UI getting it ready for styling. Like this part, it's going to be amazing (Again, Self Certified).
