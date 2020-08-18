@@ -179,7 +179,7 @@ And when I click the link I'm shown my about page. Again - Nice 👍
 
 ---
 
-In [part 6](/posts/minimal-nextjs-blog-part6-azure) I'll be deploying and hosting my blog in Azure. Like this part, it's going to be amazing (Again, Self Certified).
+In [part 6](/posts/minimal-nextjs-blog-part6-azure-hosting) I'll be deploying and hosting my blog in Azure. Like this part, it's going to be amazing (Again, Self Certified).
 
 ## Source
 
@@ -336,7 +336,7 @@ export const getStaticPaths: GetStaticPaths = async (): Promise<{
 
 ```
 
-**The full source for /pages//[slug].tsx**
+**The full source for /pages/[slug].tsx**
 
 ```tsx
 import React from 'react'

@@ -33,6 +33,12 @@ const IndexPage = (props: IIndexProps) => {
       <main>
         <h1>Home page</h1>
         <section>
+          <h2>Pages</h2>
+          <Link href="/about">
+            <a>About</a>
+          </Link>
+        </section>
+        <section>
           <h2>Posts</h2>
           {sortedPosts.map((blogMetadata) => (
             <article key={blogMetadata.slug}>
