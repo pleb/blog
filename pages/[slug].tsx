@@ -1,26 +1,20 @@
 import React from 'react'
 import matter from 'gray-matter'
-import { IBlogMetadata } from '../index'
 import { GetStaticProps, GetStaticPaths, GetStaticPropsContext } from 'next'
-import { extractBlogMeta } from '../../shared/posts'
-import { getPostsMarkdownFileNames, readPostFile } from '../../shared/build-time/posts'
-import { covertMarkdownToHtml } from '../../shared/build-time/utilities'
+import { covertMarkdownToHtml, getMarkdownFileNames, readFile } from '../shared/build-time/utilities'
 
-interface IBlogPostProps {
-  blogMeta: IBlogMetadata
+interface IMiscellaneousPage {
   html: string
 }
 
-const BlogPostPage = (props: IBlogPostProps) => {
+const MiscellaneousPage = (props: IMiscellaneousPage) => {
   return (
     <>
       <header>
         <p>My Blog</p>
       </header>
       <main>
-        <h1>{props.blogMeta.title}</h1>
         <section dangerouslySetInnerHTML={{ __html: props.html }}></section>
-        <p>Date {props.blogMeta.date}</p>
       </main>
       <footer>
         <p>Author: Wade Baglin</p>
@@ -29,17 +23,15 @@ const BlogPostPage = (props: IBlogPostProps) => {
   )
 }
 
-export default BlogPostPage
+export default MiscellaneousPage
 
-export const getStaticProps: GetStaticProps = async (context: GetStaticPropsContext): Promise<{ props: IBlogPostProps }> => {
+export const getStaticProps: GetStaticProps = async (context: GetStaticPropsContext): Promise<{ props: IMiscellaneousPage }> => {
   const slug = context.params!.slug
-  const { data, content } = matter(readPostFile(`${slug}.md`))
-  const blogMeta = extractBlogMeta(data)
+  const { content } = matter(readFile('miscellaneous', `${slug}.md`))
   const html = await covertMarkdownToHtml(content)
 
   return {
     props: {
-      blogMeta,
       html
     }
   }
@@ -49,7 +41,7 @@ export const getStaticPaths: GetStaticPaths = async (): Promise<{
   paths: Array<string | { params: { slug: string } }>
   fallback: boolean
 }> => {
-  const markdownFileNames = await getPostsMarkdownFileNames()
+  const markdownFileNames = await getMarkdownFileNames('miscellaneous')
   const markdownFileNamesWithoutExtensions = markdownFileNames.map((fileName) => fileName.replace('.md', ''))
 
   return {

@@ -422,7 +422,7 @@ import { getPostsMarkdownFileNames, readPostFile } from '../../shared/build-time
 
 interface IBlogPostProps {
   blogMeta: IBlogMetadata
-  content: string
+  html: string
 }
 
 const BlogPostPage = (props: IBlogPostProps) => {
@@ -433,7 +433,7 @@ const BlogPostPage = (props: IBlogPostProps) => {
       </header>
       <main>
         <h1>{props.blogMeta.title}</h1>
-        <section dangerouslySetInnerHTML={{ __html: props.content }}></section>
+        <section dangerouslySetInnerHTML={{ __html: props.html }}></section>
         <p>Date {props.blogMeta.date}</p>
       </main>
       <footer>
@@ -455,7 +455,7 @@ export const getStaticProps: GetStaticProps = async (context: GetStaticPropsCont
   return {
     props: {
       blogMeta,
-      content: result.toString()
+      html: result.toString()
     }
   }
 }
