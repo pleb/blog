@@ -2,15 +2,15 @@
 title: Always 64bit PowerShell Execution
 slug: always-64bit-powershell-execution
 date: June 22, 2019
-categories: 
+categories:
   - PowerShell
   - AWS
   - AWS CodeDeploy
 ---
 
-Some time ago, I had a need for my PowerShell scripts to be always executed in a 64-bit process. The exact reason escapes me for the moment, though a quick search shows this requirement is somewhat common enough, and I figured I would write a blog about the solution I ended up using to solve it.
+Some time ago, I needed a few PowerShell scripts to be executed in a 64-bit process regardless of whether they were called from a 32 or 64 bit shell. The exact reason escapes me, though a quick search shows this requirement is somewhat common enough. Given the search results, I figured I would write a blog about the solution I ended up using to solve it.
 
-For a minimal effort solution to solve such a problem, one might do something like the following:
+A minimal effort solution to solve such a problem could be something like the following:
 
 ```powershell
 if ($PsRootPath -NotLike "*SysWOW64*") {
@@ -19,27 +19,31 @@ if ($PsRootPath -NotLike "*SysWOW64*") {
 }
 ```
 
-Great! If a caller of my script was to use a 32-bit version of PowerShell, they would be presented with a message telling them to change to the 64-bit version; we’d also set the exit code to 1, as we are not monsters! For a simple use case, this would be fine. Sure, it is not exactly great user experience, but hey, it gets the job done and the justification could be the script is of low value and not worth the extra effort.
+Great! If a script caller was using a 32 bit shell, they would be presented with a message telling them to change to the 64 bit shell. The solution also sets the exit code to 1, as A) I'm not a monster, and B) if the caller is an application/code etc it should trigger a better fail experience. Without setting the exit code the caller might not realise that there was an error and continue the execution under the belief the script executed successfully.
 
-However, there are situations where the script is of high value, say part of an automated deployment process, and the control of the bitness is something of a pipedream – I am looking at you [AWS CodeDeploy](https://aws.amazon.com/codedeploy/)! [Luke, answering a similar question on ServerFault](https://serverfault.com/a/783858/134867), has suggested adding the following snippet of code to the top of PowerShell scripts:
+However, there are certain situations where the bitness of the shell is out of one's control or the willingness to "can it just work" is paramount.
 
-```powershell
+The bitness control is something I ran into when using [AWS CodeDeploy](https://aws.amazon.com/codedeploy/)! Hmm. Maybe I just remember why I needed this solution in the first place. Congrats to me!
+
+To answer this, [Luke, answering a similar question on ServerFault](https://serverfault.com/a/783858/134867), has suggested adding the following snippet of code to the top of PowerShell scripts:
+
+"`powershell
 if ($PSHOME -like "*SysWOW64*")
 {
-  Write-Warning "Restarting this script under 64-bit Windows PowerShell."
+Write-Warning "Restarting this script under 64-bit Windows PowerShell."
 
-  & (Join-Path ($PSHOME -replace "SysWOW64", "SysNative") powershell.exe) -File `
-    (Join-Path $PSScriptRoot $MyInvocation.MyCommand) @args
+& (Join-Path ($PSHOME -replace "SysWOW64", "SysNative") powershell.exe) -File `
+(Join-Path $PSScriptRoot $MyInvocation.MyCommand) @args
 
-  # Exit 32-bit script.
-  Exit $LastExitCode
+# Exit 32-bit script.
+Exit $LastExitCode
 }
 
 # Your 64-bit script code follows here...
 Write-Output "64bit only"
 ```
 
-Good, the problem has been solved for a single script. Though Luke’s solution at face-value seems fine, what if the deployment was more complex, what if you had a spec file like the following?
+Great. This works well for a couple of scripts. But what if you had more than a couple, or what if the scripts formed a formal pipeline line? Well, in the case of AWS Code Deploy, the deployment pipeline may look a little like
 
 ```yaml
 version: 0.0
@@ -59,11 +63,11 @@ hooks:
     - location: .\CodeDeploy\Scripts\Send-SlackNotification.ps1
 ```
 
-Uh-oh. Without due care, you will probably end up reusing this ~~code~~ snippet over and over again, which is a code script smell. Did somebody mention DRY (Don’t repeat yourself)? Good work.
+Uh-oh. Without due care, we would probably end up reusing Luke's code snippet repeatedly at the top of each file. So what's the problem here? The main issue is that we're in violation of the DRY (Don't repeat yourself) rule. And so what exactly is the issue then? If we need to change how the switch from 32 to 64 bit happens, we would need to make the same edits for each file. Not to forget, it would be easy to miss a modification or for the switch logic to drift from one file to the next.
 
-What we need is a better way. A reusable way. Lucky for us, with the power of PowerShell modules we can address this in a clean manner. I am not going to go into detail about modules, as that is a little off the path of what this post is about, though I will say you can think of them as, simply, as a single or collection of callable functions.
+What is a better way? A reusable way? Lucky for us, we can achieve this using a PowerShell module. PS modules allow us to define and call functions in scripts with minimal effort.
 
-Avoiding a DRY violation, we would declare our module like so:
+A PS function based on Luke's original snippet could be:
 
 ```powershell
 Function Use-64Bit {
@@ -81,7 +85,7 @@ Function Use-64Bit {
         $ScriptFilePath
     )
     Process {
-        # Are you running in 32-bit mode?
+        # Running in 32-bit mode?
         #   (\SysWOW64\ = 32-bit mode)
         if ($PsRootPath -like "*SysWOW64*") {
             Write-Warning "Restarting this script under 64-bit Windows PowerShell."
@@ -103,13 +107,15 @@ Function Use-64Bit {
 }
 ```
 
-A side note. My convention for naming PowerShell Modules is fairly straightforward. If the module contains a single function, then name it after that function; otherwise, where there is more than one function, name it after what the group of functions represent. For example, if I had a set of functions for acting on IIS, then I would likely name it `IIS-Utilities.psm1`.
+A side note. My convention for naming PowerShell Modules is relatively straightforward. If the module contains a single function, name it after that function; otherwise, name it using a collective noun where there is more than one function. For example, a set of PS functions for configuring IIS might be named `IIS-Utilities.psm1`.
 
-For this module, as it contains a single function, I will name it `Use-64Bit.psm1`. 
+For this module, as it contains a single function, I will name it `Use-64Bit.psm1`.
 
 The file extension of `.psm1` is the convention for PowerShell modules.
 
-Brillant! We have our module and It is reusable. Let us go test it! Below is a little test script which will use the module and output an object with a message `64 bit ahoy`. 
+Brilliant! I have my module, and it's reusable. Let me show it to you by printing '64 bit ahoy`. Whether I run the script in the 32 or 64 bit shell, I'll get the message '64 bit ahoy` with the only difference being the one executed in the 32 bit shell will include a warning.
+
+The test script
 
 ```powershell
 Set-Location ([System.IO.Path]::GetFullPath((Split-Path $PSCOMMANDPATH)))
@@ -122,35 +128,33 @@ if ($32BitRun -eq $TRUE) { exit $LastExitCode }
 Write-Output { Message = "64 bit ahoy" }
 ```
 
-You will notice that I include the module using the following syntax:
+Notice that I include the module using the following syntax:
 
 ```powershell
 Import-Module ".\Modules\Use-64Bit.psm1" -Force
 ```
 
-The command is `Import-Module` followed by the path where it can be found and finally the argument `-Force`. All this is pretty straight forward, except for the force argument. Setting this argument tells PowerShell to **not** load the cached version of the module and to read it from disk. I do this out of habit, as more than once before I have been bitten by this caching behaviour.
-
-And, that should do it. On with the tests!
+The command is `Import-Module` followed by the path where it can be found and finally the argument `-Force`. All this is pretty straightforward, except for the force argument. Setting this argument tells PowerShell to **not** load the module's cached version and read it from disk. I do this out of habit, as I have been bitten by this caching behaviour more than once.
 
 Test 1 – Execution in a 32 bit PowerShell console
 
 ![PS32 Bit Test](/always-64bit-powershell-execution/PS32Bit-Test.png)
 
-Great! We can see a warning telling us the script will restart and be executed under a 64 bit PowerShell console, and we also see an outputted object with the message `64 bit ahoy`!
+Great! We can see a warning telling us the script will restart and be executed under a 64 bit PowerShell console, and also we see an outputted object with the message '64 bit ahoy`!
 
 Test 2 – Execution in a 64 bit PowerShell console
 
 ![PS64 Bit Test](/always-64bit-powershell-execution/PS64Bit-Test.png)
 
-Again, we see the `64 bit ahoy message`, but this time, as expected, there was no warning.
+Again, we see the '64 bit ahoy` message, but this time, as expected, there was no warning.
 
-Lastly, the astute reader will have noticed this little snippet of script `2>&1 | Tee-Object -Variable allOutput`. I will not get into stream redirection in the post, but what I have done here is captured the steam output – all flavours – into the variable `allOutput`, which I then write to the host (tsk tsk, I know ?). Additionally, because I’ve used [Tee-Object](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/tee-object?view=powershell-6) , which like the letter T implies, splits the stream into two, means the stream continues down the pipeline.
+Lastly, the astute reader will have noticed this little snippet of script `2>&1 | Tee-Object -Variable allOutput`. I'll avoid stream redirecting in the post, but the basics of what this does, is captured the steam output – all flavours – into the variable `allOutput`, which then is written to the host (tsk tsk, I know). Additionally, I've used [Tee-Object](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/tee-object?view=powershell-6), which, as the letter T implies, splits the stream into two, meaning the stream continues on in the pipeline.
 
-What would happen without it?
+Why, you ask? What would happen without it?
 
 ![PS32 Bit No Capture Test](/always-64bit-powershell-execution/PS32Bit-No-Capture-Test.png)
 
-That is right, all the output is lost. Well, maybe not lost in a technical sense, but I will not see it from the 32-bit console.
+As you see, all the output is lost. Well, maybe not lost in a technical sense, but I will not see it from the 32-bit console, which is likely going to be annoying!
 
 Source files can be downloaded from [Github](https://github.com/pleb/blogging-stash/tree/master/Powershell/Always64Bit).
 
