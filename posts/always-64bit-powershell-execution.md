@@ -23,11 +23,11 @@ Great! If a script caller was using a 32 bit shell, they would be presented with
 
 However, there are certain situations where the bitness of the shell is out of one's control or the willingness to "can it just work" is paramount.
 
-The bitness control is something I ran into when using [AWS CodeDeploy](https://aws.amazon.com/codedeploy/)! Hmm. Maybe I just remember why I needed this solution in the first place. Congrats to me!
+The bitness control is something I ran into when using [AWS CodeDeploy](https://aws.amazon.com/codedeploy/)! Hmm. Maybe I just remembered why I needed this solution in the first place. Congrats to me!
 
 To answer this, [Luke, answering a similar question on ServerFault](https://serverfault.com/a/783858/134867), has suggested adding the following snippet of code to the top of PowerShell scripts:
 
-"`powershell
+```powershell
 if ($PSHOME -like "*SysWOW64*")
 {
 Write-Warning "Restarting this script under 64-bit Windows PowerShell."
@@ -109,7 +109,7 @@ Function Use-64Bit {
 
 A side note. My convention for naming PowerShell Modules is relatively straightforward. If the module contains a single function, name it after that function; otherwise, name it using a collective noun where there is more than one function. For example, a set of PS functions for configuring IIS might be named `IIS-Utilities.psm1`.
 
-For this module, as it contains a single function, I will name it `Use-64Bit.psm1`.
+For this module, as it contains a single function, I name it `Use-64Bit.psm1`.
 
 The file extension of `.psm1` is the convention for PowerShell modules.
 
@@ -148,13 +148,13 @@ Test 2 – Execution in a 64 bit PowerShell console
 
 Again, we see the '64 bit ahoy` message, but this time, as expected, there was no warning.
 
-Lastly, the astute reader will have noticed this little snippet of script `2>&1 | Tee-Object -Variable allOutput`. I'll avoid stream redirecting in the post, but the basics of what this does, is captured the steam output – all flavours – into the variable `allOutput`, which then is written to the host (tsk tsk, I know). Additionally, I've used [Tee-Object](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/tee-object?view=powershell-6), which, as the letter T implies, splits the stream into two, meaning the stream continues on in the pipeline.
+Lastly, the astute reader will have noticed this little snippet of script `2>&1 | Tee-Object -Variable allOutput`. I'll avoid stream redirecting in the post, but the basics of what this does, is captured the steam output – all flavours – into the variable `allOutput`, which then is written to the host (tsk tsk, I know). Additionally, I used [Tee-Object](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/tee-object?view=powershell-6), which, as the letter T implies, splits the stream into two, meaning the stream continues on in the pipeline.
 
 Why, you ask? What would happen without it?
 
 ![PS32 Bit No Capture Test](/always-64bit-powershell-execution/PS32Bit-No-Capture-Test.png)
 
-As you see, all the output is lost. Well, maybe not lost in a technical sense, but I will not see it from the 32-bit console, which is likely going to be annoying!
+As you see, all the output is lost. Well, maybe not lost in a technical sense, but I don't see it from the 32-bit console, which is likely going to be annoying!
 
 Source files can be downloaded from [Github](https://github.com/pleb/blogging-stash/tree/master/Powershell/Always64Bit).
 

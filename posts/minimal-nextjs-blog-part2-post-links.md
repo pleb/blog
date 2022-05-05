@@ -8,19 +8,19 @@ categories:
   - React
 ---
 
-*This is a multi-part series. If you haven't read the previous posts, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue on from each other and are not individual units.*
+*This is a multipart series. If you haven't read the previous post, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue from each other and don't make sense as individual units.*
 
 ---
 
-Part 2, Welcome. In this part I will be rendering a list of links to posts to the browser screen. Although initially, you might be thinking - hey that's not very hard - bear in mind that I'm building a static site with no real backend, all this is decided at build (webpack) time. Such is the power of [Next.js](https://nextjs.org).
+Part 2, Welcome. In this part, I render a list of links to posts on the browser screen. Although you might initially think, "Hey, that's not very hard", keep in mind that I'm building a static site with no actual backend. Due to the static nature, the links are produced at build (webpack) time. This is one of the reasons I've chosen [Next.js](https://nextjs.org) for my blog.
 
 ## Static Props (Pre-work)
 
-What exactly are static props? The official docs can be read [here](https://nextjs.org/docs/basic-features/data-fetching#getstaticprops-static-generation), but to summarise it, I can use static props to gather data at build (webpack) time, which in the case of this blog will be reading and processing of files from the file system. However, if I wasn't building a filesystem based blog, this could be querying a database or API etc.
+What are static props? The official docs for static props can be read [here](https://nextjs.org/docs/basic-features/data-fetching#getstaticprops-static-generation). To explain how I use it, I use static props to gather data at build time by reading and processing the files from the file system.
 
-To do this, I'll add a getStaticProps function to the `index.tsx` file. Although before I do that, I'll define a few types, and I'll update my IndexPage component to render both a list of post links and post categories.
+To do this, I add a getStaticProps function to the `index.tsx` file. Although before I do that, I define a few types and update my IndexPage component to render both a list of post links and post categories.
 
-A blog page needs some metadata to describe the content, it's a given right? Well, for this I'll define a type `IBlogMetadata` and it'll look like this:
+A blog page needs some metadata to describe the content. That's a given, right? Well, for this, I define a type `IBlogMetadata`, and it looks like this:
 
 ```ts
 export interface IBlogMetadata {
@@ -32,11 +32,11 @@ export interface IBlogMetadata {
 }
 ```
 
-If you're wondering why I'm using a `string` for my date, well it's because the data returned by `getStaticProps` must be JSON serialisable, and because JSON has never had a right answer for the `Date` type - it's not allowed.
+If you're wondering why I use a `string` for my date, well, because the data returned by `getStaticProps` must be JSON serialisable, and because JSON has never had a suitable answer for the `Date` type - it's not allowed.
 
-Although categories are somewhat optional, I won't denote it as such, aka `?`, and I'll represent such a situation as an empty array. This saves checking whether categories exist and generally makes code easier to read.
+Although categories are kind of optional, I won't denote it as such, aka `?`. I represent such a situation as an empty array. Making collections empty verse undefined saves checking whether the collection is defined and makes code easier to read.
 
-Ah, I need some props for my `IndexPage` component, and as most would have guessed by now, it's going to contain a collection of blog posts in the form of `IBlogMetadata[]`. This will do it:
+Ah, I need some props for my `IndexPage` component, and as most would have guessed by now, it contains a collection of blog post metadata and looks like this:
 
 ```ts
 interface IIndexProps {
@@ -44,7 +44,7 @@ interface IIndexProps {
 }
 ```
 
-Now I'll update my `IndexPage` component to render posts and categories, but as this won't be the final version, as my aim is simply to dump stuff to the screen: 
+Now I update my `IndexPage` component to render posts and categories, but this won't be the final version, as my aim is simply to show "stuff" on the screen:
 
 ```tsx
 const IndexPage = (props: IIndexProps) => {
@@ -93,17 +93,17 @@ const IndexPage = (props: IIndexProps) => {
 }
 ```
 
-As you can see, I take the input and create two collections, one being a distinct list of categories, and the other is all the posts order by their date descending. Then I simply render it to the screen. I'm not going to lie, it's not going to be pretty 😀, but it will be functional. I'll do all the UI work in one step, later on, once I have everything working.
+As you can see, I take the input and create two collections, one for a distinct list of categories, and the other is for the posts ordered descending by their date. Then I simply render it to the screen. I'm not going to lie, it's not going to be pretty 😀, but it will be functional. I do all the UI work in one step, later on, once I have everything working.
 
 ## Static Props
 
-I'll add my static get static props function, but before I do I'll add the [gray-matter](https://www.npmjs.com/package/gray-matter) and [fs-extra](https://www.npmjs.com/package/fs-extra) packages. Although one can use promises in version >= 12 of node, it's still a PITA, so I'll continue to use fs-extra till I don't have to use import workarounds. Gray matter is how I'll store my blog metadata along with the blog content. You can read more about this great package on their [GitHub page](https://github.com/jonschlinkert/gray-matter).
+Before I add the static get static props function, I add the [gray-matter](https://www.npmjs.com/package/gray-matter) and [fs-extra](https://www.npmjs.com/package/fs-extra) packages. Although I can use promises in version >= 12 of node, it's still a PITA, so I'll continue to use fs-extra till I don't have to use import workarounds. Gray matter is how I store my blog metadata along with the blog content. You can read more about this great package on their [GitHub page](https://github.com/jonschlinkert/gray-matter).
 
 ```powershell
 npm install gray-matter fs-extra @types/fs-extra --save-dev
 ```
 
-Essentially, my getStaticProps function will find and read the metadata from my blog post markdown files. Sounds pretty easy, right? Well, actually, it is. See:
+Essentially, my getStaticProps function finds and reads the metadata from my blog post markdown files. Sounds pretty easy, right? Well, actually, it is. See:
 
 ```ts
 export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexProps }> => {
@@ -123,7 +123,7 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
 
 In this function, I simply query the file system for all files under the `./posts` directory and then parse the metadata content to create the props object. There's nothing here that's all that complex, but as you can see getStaticProps is a powerful feature. 
 
-I'll quickly add a smaple blog post, as I imagine testing without one will be somewhat hard. So I'll a few of these with different dates for testing purposes.
+I add a few sample blog posts for the purposes of testing.
 
 ```text
 ---
@@ -146,7 +146,7 @@ Some markdown blog post
 A [link](#)
 ```
 
-With all this combined, if run the dev server and refresh my browser page, it now looks like this.
+With all this combined, when I run the dev server and refresh my browser page, it now looks like this.
 
 ![web screenshot](/minimal-nextjs-blog-part2-post-links/web-screenshot.png)
 
@@ -158,7 +158,7 @@ When processing the files found under the `/posts` directory, I use Gray Matter 
 const { data, content } = matter(readFileSync(path))
 ```
 
-To supply the metadata I define it in the top of each blog post file. For example, here's the metadata from my sample blog post.
+To specify the metadata, I define at the top of each blog post file. For example, here's the metadata from my sample blog post.
 
 ```text
 ---
@@ -178,7 +178,7 @@ That's it, such a simple way of writing a blog post - no database required.
 
 ---
 
-In [part 3](/posts/minimal-nextjs-blog-part3-show-post) I'll be rendering a single blog post to the screen. Like this part, it's going to be amazing (Again, Self Certified).
+In [part 3](/posts/minimal-nextjs-blog-part3-show-post) I render a single blog post to the screen. Like this part, it's going to be amazing (Again, Self Certified).
 
 ## Source
 
