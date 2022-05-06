@@ -3,25 +3,25 @@ title: Minimal Next.js Blog (Part 3 - Show Post)
 slug: minimal-nextjs-blog-part3-show-post
 date: May 1, 2022
 categories:
-  - Next.js
-  - Blogging
-  - React
+- Next.js
+- Blogging
+- React
 ---
 
-*This is a multipart series. If you haven't read the previous post, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue from each other and likely won't make sense as individual units.*
+*This is a multipart series. If you haven't read the previous post, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue on from each other and likely won't make sense as individual units.*
 
 ---
 
-Part 3, Welcome. In this part, I render a single blog post to the screen. To do this I add infrastructure to support handling each blog post page route and the conversion from markdown to HTML.
+Part 3, Welcome. In this part, I render a single blog post to the screen. I add the infrastructure to support handling each blog post page route and the conversion from markdown to HTML.
 
 ## Third-party Libraries
 
-Although parsing and converting markdown to HTML sounds like a fun exercise, I must resist the temptation to write this myself 😀. To keep me on track, I use the package [unified](https://github.com/unifiedjs/unified). Unified is an interface for processing text using syntax trees, and I use the following unified plugins:
+Although parsing and converting markdown to HTML sounds like a fun exercise, I must resist the temptation to write this myself 😀. I use the package [unified](https://github.com/unifiedjs/unified). Unified is an interface for processing text using syntax trees, and I use the following unified plugins:
 
- - [remark-parse](https://github.com/remarkjs/remark/tree/main/packages/remark-parse) -  Parses Markdown to mdast syntax trees
- - [remark-highlight.js](https://github.com/remarkjs/remark-highlight.js#readme) - Highlight code blocks with highlight.js (via lowlight)
- - [remark-html](https://github.com/remarkjs/remark-html) - Serialize Markdown as HTML
-    
+- [remark-parse](https://github.com/remarkjs/remark/tree/main/packages/remark-parse) -  Parses Markdown to mdast syntax trees
+- [remark-highlight.js](https://github.com/remarkjs/remark-highlight.js#readme) - Highlight code blocks with highlight.js (via lowlight)
+- [remark-html](https://github.com/remarkjs/remark-html) - Serialize Markdown as HTML
+
 I add these using the following NPM command:
 
 ```powershell
@@ -30,15 +30,15 @@ npm install unified remark-parse remark-highlight.js remark-html --save-dev
 
 However, there is one catch. Because I'm not allowing implicit any `"noImplicitAny": true` in my TS code and because the package `remark-highlight.js` doesn't come with types, and I can't find types on [https://definitelytyped.org/](https://definitelytyped.org/), I had to make them myself.
 
-## Definition for remark-highlight.js 
+## Definition for remark-highlight.js
 
-There are a few easy ways to go about adding definitions in TS. I won't cover these, but the one I usually sue is the mini @types folder, very much like the `/nodes_modules/@types` one.
+There are a few easy ways to go about adding definitions in TS. I won't cover these, but the one I usually opt for is the mini @types folder, very similar to the familiar `/nodes_modules/@types`.
 
-I add the folder `types` and the package folder `remark-highlight.js` and the types file `index.d.ts`.
+I add the folder `types` and the package folder `remark-highlight.js`, and the types file `index.d.ts`.
 
 ![types folder](/minimal-nextjs-blog-part3-show-post/types-folder.png)
 
-Then in the types file I add the following, which is just enough to stop the error and give me the small sub-set of API types I need.
+Then, I add the following in the types file, which is just enough to stop the error and give me the small sub-set of API types I need.
 
 ```ts
 declare module 'remark-highlight.js' {
@@ -51,13 +51,13 @@ declare module 'remark-highlight.js' {
 
 ## Blog page routing/display
 
-With the libraries installed, I add the page to handle routes to a blog post. To do this, I make use of [dynamic route segments](https://nextjs.org/docs/routing/introduction#dynamic-route-segments). Essentially, this feature allows me to build all pages that reside under the /blogs/* segment at build time. Note: As this is a static website, I'm not capturing the route. I'm building out the known pages under this route dynamically. It may help to think of it as building a page per blog post - even though under the hood it's optimised as you would expect.
+I can add the file to handle routes to a blog post with the libraries now installed. To do this, I use [dynamic route segments](https://nextjs.org/docs/routing/introduction#dynamic-route-segments). Essentially, this feature allows me to inform Next.js about all the pages that will reside under the /blogs/* segment. Note: As this is a static website, I'm not capturing the route. I'm dynamically building out the known pages under this route at build time.
 
 First, I add the specially named file `[slug].tsx` under the folder `blog` in the `pages` directory.
 
 ### Page component
 
-A blog page will be a new React component, so I define that first. I start by defining my prop type.
+A blog page will be a new React component, so I define that first. I start by describing my prop type.
 
 ```ts
 interface IBlogPostProps {
@@ -66,9 +66,9 @@ interface IBlogPostProps {
 }
 ```
 
-There's not much too it, because I reus the `IBlogMetadata` type defined in my `index.tsx` file. Nice 👍
+There's not much to it because of the reuse of the `IBlogMetadata` type defined in my `index.tsx` file. Nice 👍
 
-I then define a component to render the blog to the browser screen. I don't do anything fancy yet, as like with the index page, my aim is to simply render the content to the screen.
+I then define a component to render the blog to the browser screen. I don't do anything fancy yet, like the index page; my objective is to render something simple on the browser page.
 
 ```tsx
 const BlogPostPage = (props: IBlogPostProps) => {
@@ -92,7 +92,7 @@ const BlogPostPage = (props: IBlogPostProps) => {
 
 ### Mini refactor
 
-Before I add the Next.js functions which power the `[slug].tsx` page, I do a mini refactor of the getStaticProps function in the `index.tsx` file. This is so I make use of the logic defined there (DRY).
+Before adding the Next.js function that builds the props for each `[slug].tsx` page, I do a mini refactor of the getStaticProps function in the `index.tsx` file. Why might you ask? This is so I may reuse the logic already defined there (DRY).
 
 I change it from
 
@@ -139,7 +139,7 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
 }
 ```
 
-Webpack is now a little confused, and is trying to reference node's FS in the web output from the build. To fix this, I move these shared functions to their own files under the new paths `./shared/posts.ts` and `./shared/build-time/posts.ts`. By using a separate folder for my shared code, this allows me to split the code nicely and the paths should hopefully act as a reminder for me to think about where my shared code should live. This also allows webpack to optimise away the code from the build and stop the errors. With that in mind, I now have the following: 
+Webpack is now a little confused and is trying to reference Node's FS in the web output from the build. To fix this, I move these shared functions to their own files under the new paths `./shared/posts.ts` and `./shared/build-time/posts.ts`. Using a separate folder for my shared code allows me to split the code nicely, and the paths should be a reminder for me to think about where my shared code should live. Doing this also allows webpack to optimise away the code from the build and stop the errors. With that in mind, I now have the following:
 
 **/pages/Index.tsx**
 
@@ -182,7 +182,7 @@ export const readPostFile = (fileName: string): Buffer => readFileSync(`${proces
 
 ### Page paths
 
-Next.js needs to know how all pages that exist for this slug in order to build a static website. To supply Next.js this information, I define the `getStaticPaths` helper function for my `/pages/blog/[slug].tsx` file. As part of satisfying the contract for getStaticPaths, I return a collection of all blog slugs. With my recent refactor, my code is succinctly:
+Next.js needs to know all pages that exist for this slug to build a static website. To supply Next.js this information, I define the `getStaticPaths` helper function for my `/pages/blog/[slug].tsx` file. To satisfy the contract for getStaticPaths, I return a collection of all blog slugs. With my recent refactor, my code is succinctly:
 
 ```ts
 export const getStaticPaths: GetStaticPaths = async (): Promise<{
@@ -207,7 +207,7 @@ export const getStaticPaths: GetStaticPaths = async (): Promise<{
 
 ### Page content
 
-I've told Next.js about the pages that exist under the `blog/*` slug route. However, I also need to supply Next.js with the `IBlogPostProps` props per page. This is needed for Next.js to render each page matching the route. To do this, I define the `getStaticProps` function. This function inspects the supplied `context: GetStaticPropsContext` and builds the props data for the matching slug. The logic is as follows:  
+I've told Next.js about the pages under the `blog/*` slug route. However, I also need to supply Next.js with the `IBlogPostProps` props per page. The props are needed for Next.js to render each page matching the route. To do this, I define the `getStaticProps` function. This function inspects the supplied `context: GetStaticPropsContext` and builds the props data for the matching slug. The logic is as follows:
 
 ```ts
 export const getStaticProps: GetStaticProps = async (context: GetStaticPropsContext): Promise<{ props: IBlogPostProps }> => {
@@ -232,7 +232,7 @@ If I were to display the sample blog post from [part 2](/posts/minimal-nextjs-bl
 
 ![screenshot of sample blog post](/minimal-nextjs-blog-part3-show-post/sample-blog-post-screenshot.png)
 
-As you can see, it's not very fancy 🤣, but it's working. 
+As you can see, it's not very fancy 🤣, but it's working.
 
 Additionally, here's a little demo of the whole thing in action. Pretty neat, huh? 🎉
 
