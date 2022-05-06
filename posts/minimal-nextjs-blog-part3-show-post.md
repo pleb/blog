@@ -1,44 +1,44 @@
 ---
 title: Minimal Next.js Blog (Part 3 - Show Post)
 slug: minimal-nextjs-blog-part3-show-post
-date: August 10, 2020
+date: May 1, 2022
 categories:
   - Next.js
   - Blogging
   - React
 ---
 
-*This is a multi-part series. If you haven't read the previous posts, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue on from each other and are not individual units.*
+*This is a multipart series. If you haven't read the previous post, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue from each other and likely won't make sense as individual units.*
 
 ---
 
-Part 3, Welcome. In this part, we will be rendering a single blog post to the screen. To do this I'll need to add infrastructure to support handling each blog post page route and the conversion of markdown to HTML.
+Part 3, Welcome. In this part, I render a single blog post to the screen. To do this I add infrastructure to support handling each blog post page route and the conversion from markdown to HTML.
 
 ## Third-party Libraries
 
-Although parsing and converting markdown to HTML sounds like a fun exercise, I will resist my temptation to go off on a tangent and instead focus on the task at hand, aka this blog series about creating a blog. Blogception if you will 😀. Anyway, to help keep me on the correct path I will be using the package [unified](https://github.com/unifiedjs/unified), an interface for processing text using syntax trees, and the following unified plugins:
+Although parsing and converting markdown to HTML sounds like a fun exercise, I must resist the temptation to write this myself 😀. To keep me on track, I use the package [unified](https://github.com/unifiedjs/unified). Unified is an interface for processing text using syntax trees, and I use the following unified plugins:
 
  - [remark-parse](https://github.com/remarkjs/remark/tree/main/packages/remark-parse) -  Parses Markdown to mdast syntax trees
  - [remark-highlight.js](https://github.com/remarkjs/remark-highlight.js#readme) - Highlight code blocks with highlight.js (via lowlight)
  - [remark-html](https://github.com/remarkjs/remark-html) - Serialize Markdown as HTML
     
-Adding these libraries is pretty easy, as you can imagine.
+I add these using the following NPM command:
 
 ```powershell
 npm install unified remark-parse remark-highlight.js remark-html --save-dev
 ```
 
-However, there is one catch. Because I'm not allowing implicit any `"noImplicitAny": true` in my TS code and because the package `remark-highlight.js` doesn't come with types and no types can be found on [https://definitelytyped.org/](https://definitelytyped.org/), I'm going to need to add a definition myself.
+However, there is one catch. Because I'm not allowing implicit any `"noImplicitAny": true` in my TS code and because the package `remark-highlight.js` doesn't come with types, and I can't find types on [https://definitelytyped.org/](https://definitelytyped.org/), I had to make them myself.
 
 ## Definition for remark-highlight.js 
 
-There are a few easy ways to go about adding definitions in TS. I won't cover these, but the one I usually settle on is my own mini @types folder, very much like the `/nodes_modules/@types` one.
+There are a few easy ways to go about adding definitions in TS. I won't cover these, but the one I usually sue is the mini @types folder, very much like the `/nodes_modules/@types` one.
 
-I'll add the folder `types` and the package folder `remark-highlight.js` and the types file `index.d.ts`. The full path is `./types/remark-highlight.js/index.d.ts`.
+I add the folder `types` and the package folder `remark-highlight.js` and the types file `index.d.ts`.
 
 ![types folder](/minimal-nextjs-blog-part3-show-post/types-folder.png)
 
-Then in the types file I'll add the following, which is just enough to stop the error. If I decided to use more of the package, later on, I'll continue to build out its types.
+Then in the types file I add the following, which is just enough to stop the error and give me the small sub-set of API types I need.
 
 ```ts
 declare module 'remark-highlight.js' {
@@ -51,13 +51,13 @@ declare module 'remark-highlight.js' {
 
 ## Blog page routing/display
 
-Now I've installed the libraries that I'll need to display a blog page. I'll add the page to handle routes to a blog post. To do this, I'll be making use of [dynamic route segments](https://nextjs.org/docs/routing/introduction#dynamic-route-segments). Essentially, this feature allows me to build all pages that will reside under the /blogs/* segment at build (webpack) time. Note: As this is a static website, I'm not capturing the route, but rather, I'm building out the known pages under this route dynamically. If it helps, think of it as building a page per blog post - even though under the hood it's optimised as you would expect.
+With the libraries installed, I add the page to handle routes to a blog post. To do this, I make use of [dynamic route segments](https://nextjs.org/docs/routing/introduction#dynamic-route-segments). Essentially, this feature allows me to build all pages that reside under the /blogs/* segment at build time. Note: As this is a static website, I'm not capturing the route. I'm building out the known pages under this route dynamically. It may help to think of it as building a page per blog post - even though under the hood it's optimised as you would expect.
 
-First, I'll add the specially named file `[slug].tsx` under the folder `blog` in the `pages` directory. The full path is`./pages/blog/[slug].tsx`.
+First, I add the specially named file `[slug].tsx` under the folder `blog` in the `pages` directory.
 
 ### Page component
 
-A blog page, of course, will be a new React component, so I'll define that first. I'll start with my props type.
+A blog page will be a new React component, so I define that first. I start by defining my prop type.
 
 ```ts
 interface IBlogPostProps {
@@ -66,9 +66,9 @@ interface IBlogPostProps {
 }
 ```
 
-There's not much too it, and I've even reused the `IBlogMetadata` type defined in my `index.tsx` file. Nice 👍
+There's not much too it, because I reus the `IBlogMetadata` type defined in my `index.tsx` file. Nice 👍
 
-Then I'll define a component to render the blog to the browser screen. I won't do anything fancy yet, as like in the index page, my aim is to simply render the content to the screen.
+I then define a component to render the blog to the browser screen. I don't do anything fancy yet, as like with the index page, my aim is to simply render the content to the screen.
 
 ```tsx
 const BlogPostPage = (props: IBlogPostProps) => {
@@ -92,9 +92,9 @@ const BlogPostPage = (props: IBlogPostProps) => {
 
 ### Mini refactor
 
-Before I start adding the Next.js functions which power the `[slug].tsx` page, I'll do a mini refactor of the getStaticProps function in the `index.tsx` file so that I can reuse some of its logic (DRY).
+Before I add the Next.js functions which power the `[slug].tsx` page, I do a mini refactor of the getStaticProps function in the `index.tsx` file. This is so I make use of the logic defined there (DRY).
 
-I'll change it from
+I change it from
 
 ```ts
 export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexProps }> => {
@@ -139,7 +139,7 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
 }
 ```
 
-Now, because webpack is now a little confused and is trying to reference node's FS for the web side of the build, I'll move these shared functions to their own files under the new paths `./shared/posts.ts` and `./shared/build-time/posts.ts`. Using a separate folder for my TS files which hold shared code that is used at build time allows me to split the code nicely, and the pathing should (hopefully) act as a reminder for me to think about where my shared code should live. This also allows webpack to optimise away the code and should a) stop the errors I'm getting about webpack trying to pack node packages into my web build, and b) make for a more efficient build product. So with that in mind, I now have the following. 
+Webpack is now a little confused, and is trying to reference node's FS in the web output from the build. To fix this, I move these shared functions to their own files under the new paths `./shared/posts.ts` and `./shared/build-time/posts.ts`. By using a separate folder for my shared code, this allows me to split the code nicely and the paths should hopefully act as a reminder for me to think about where my shared code should live. This also allows webpack to optimise away the code from the build and stop the errors. With that in mind, I now have the following: 
 
 **/pages/Index.tsx**
 
@@ -182,7 +182,7 @@ export const readPostFile = (fileName: string): Buffer => readFileSync(`${proces
 
 ### Page paths
 
-Next.js needs a way to know how many pages exist for this slug, as in order to build a static website, all pages will need to be known about at build (webpack) time. To do this, I'll define the `getStaticPaths` helper function for my `/pages/blog/[slug].tsx` file. As part the contract for getStaticPaths, I will return a collection of the possible blog slugs. 
+Next.js needs to know how all pages that exist for this slug in order to build a static website. To supply Next.js this information, I define the `getStaticPaths` helper function for my `/pages/blog/[slug].tsx` file. As part of satisfying the contract for getStaticPaths, I return a collection of all blog slugs. With my recent refactor, my code is succinctly:
 
 ```ts
 export const getStaticPaths: GetStaticPaths = async (): Promise<{
@@ -207,7 +207,7 @@ export const getStaticPaths: GetStaticPaths = async (): Promise<{
 
 ### Page content
 
-Now I've told Next.js how many pages exist under the `blog/*` slug route, I need to tell it what each page's props look like, as Next.js will pass the props to the page component to render the page for the given slug. Thankfully, this is pretty easy to do. I'll define my getStaticProps function which inspects the passed in blog slug and returns an instance of the corresponding React component props.
+I've told Next.js about the pages that exist under the `blog/*` slug route. However, I also need to supply Next.js with the `IBlogPostProps` props per page. This is needed for Next.js to render each page matching the route. To do this, I define the `getStaticProps` function. This function inspects the supplied `context: GetStaticPropsContext` and builds the props data for the matching slug. The logic is as follows:  
 
 ```ts
 export const getStaticProps: GetStaticProps = async (context: GetStaticPropsContext): Promise<{ props: IBlogPostProps }> => {
@@ -228,17 +228,19 @@ export const getStaticProps: GetStaticProps = async (context: GetStaticPropsCont
 
 ## Demo
 
-Which, if I were to display the sample blog post from [part 2](/posts/minimal-nextjs-blog-part2-post-links) on the screen, it would look like this.
+If I were to display the sample blog post from [part 2](/posts/minimal-nextjs-blog-part2-post-links) on the screen, it would look like:
 
 ![screenshot of sample blog post](/minimal-nextjs-blog-part3-show-post/sample-blog-post-screenshot.png)
 
-As you can see, it's very much not fancy 🤣. Additionally, here's a little demo of the whole thing in action. Pretty neat, huh? 🎉
+As you can see, it's not very fancy 🤣, but it's working. 
+
+Additionally, here's a little demo of the whole thing in action. Pretty neat, huh? 🎉
 
 ![demo of showing blog posts](/minimal-nextjs-blog-part3-show-post/demo.gif)
 
 ---
 
-In [part 4](/posts/minimal-nextjs-blog-part4-show-category-list) I'll be rendering a list of posts within a category. Like this part, it's going to be amazing (Again, Self Certified).
+In [part 4](/posts/minimal-nextjs-blog-part4-show-category-list) I render a list of posts within a category. Like this part, it's amazing (Again, Self Certified).
 
 ## Source
 

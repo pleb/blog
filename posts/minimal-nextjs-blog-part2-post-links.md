@@ -1,14 +1,14 @@
 ---
 title: Minimal Next.js Blog (Part 2 - Post Link)
 slug: minimal-nextjs-blog-part2-post-links
-date: August 7, 2020
+date: May 1, 2022
 categories:
   - Next.js
   - Blogging
   - React
 ---
 
-*This is a multipart series. If you haven't read the previous post, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue from each other and don't make sense as individual units.*
+*This is a multipart series. If you haven't read the previous post, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue from each other and likely won't make sense as individual units.*
 
 ---
 
@@ -178,7 +178,7 @@ That's it, such a simple way of writing a blog post - no database required.
 
 ---
 
-In [part 3](/posts/minimal-nextjs-blog-part3-show-post) I render a single blog post to the screen. Like this part, it's going to be amazing (Again, Self Certified).
+In [part 3](/posts/minimal-nextjs-blog-part3-show-post) I render a single blog post to the screen. Like this part, it's amazing (Again, Self Certified).
 
 ## Source
 

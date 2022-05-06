@@ -1,7 +1,7 @@
 ---
 title: Minimal Next.js Blog (Part 1 - Hello World)
 slug: minimal-nextjs-blog-part1-hello-world
-date: August 6, 2020
+date: May 1, 2022
 snippet: Building a static blog
 categories:
 
@@ -166,4 +166,4 @@ Yay. FINISHED!
 ---
 
 In [part 2](/posts/minimal-nextjs-blog-part1-hello-world) I render a list of posts and categories to the
-screen. Don't miss it, as it will be amazing (Self Certified).
+screen. Don't miss it, as it is amazing (Self Certified).
