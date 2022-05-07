@@ -1,24 +1,24 @@
 ---
 title: Minimal Next.js Blog (Part 4 - Show posts in category)
 slug: minimal-nextjs-blog-part4-show-posts-in-category
-date: August 12, 2020
+date: May 1, 2022
 categories:
   - Next.js
   - Blogging
   - React
 ---
 
-*This is a multi-part series. If you haven't read the previous posts, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue on from each other and are not individual units.*
+*This is a multipart series. If you haven't read the previous post, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue on from each other and likely won't make sense as individual units.*
 
 ---
 
-Part 4, Welcome. In this part, I will be rendering a list of all posts within a category. The logic to do this is essentially a mix of that which I used in the `pages/index.tsx` and `blog\[slug].tsx` pages.
+Part 4, Welcome. In this part, I render a list of all posts within a category. The logic is essentially a mix of what I used in the `pages/index.tsx` and `blog\[slug].tsx` pages.
 
-To start with, I'll do a little refactor of the functionality I want to share between these pages, then after that I'll lay down the required code to render a list of blog posts within the selected category.
+To start with, I do a minor refactoring of the functionality I want to share between these pages; then, I lay down the required code to render a list of blog posts within the selected category.
 
 ## Refactor time
 
-I'll move the logic to create a collection of blog metadata out of the `pages/index.tsx` page and into the shared file `/shared/posts.ts`, so I'll change 
+I move the logic to create a collection of blog metadata out of the `pages/index.tsx` page and into the shared file `/shared/posts.ts`, so I change
 
 ```ts
 export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexProps }> => {
@@ -43,7 +43,7 @@ export const getStaticProps: GetStaticProps = async (): Promise<{ props: IIndexP
 }
 ```
 
-The newly created function `getBlogMetadata` will be placed in the `/shared/build-time/posts.ts` file.
+The newly created function `getBlogMetadata` is placed in the `/shared/build-time/posts.ts` file.
 
 ```ts
 export const getBlogMetadata = async (filterCategory?: string): Promise<IBlogMetadata[]> => {
@@ -58,9 +58,9 @@ export const getBlogMetadata = async (filterCategory?: string): Promise<IBlogMet
 }
 ``` 
 
-Did you notice I've also added an optional param to filter the returned collection by a category? Yes 🎉
+Did you notice I added an optional param to filter the returned collection by a category? Yes 🎉
 
-I'll also need a share the logic to get a collection of distinct categories and sorted posts. Which changes my `IndexPage` component from
+I also need a share the logic to get a collection of distinct categories and sorted posts. Which changes my `IndexPage` component from
 
 ```ts
 const IndexPage = (props: IIndexProps) => {
@@ -86,7 +86,7 @@ const IndexPage = (props: IIndexProps) => {
   // TSX Code
 ```
 
-with `getDistinctCategories` and `sortBlogMetaDescending` simply becoming this in the `./shared/posts.ts` file 
+with `getDistinctCategories` and `sortBlogMetaDescending` simply becoming this in the `./shared/posts.ts` file
 
 ```ts
 export const getDistinctCategories = (blogMetadata: IBlogMetadata[]): string[] =>
@@ -102,17 +102,17 @@ export const sortBlogMetaDescending = (meta: IBlogMetadata[]): IBlogMetadata[] =
 
 ## Sanitised categories
 
-Having perfect hindsight would be great. However, sadly it is also impossible. Truth be told, I've already gone back and made a number of adjustments to the code and previous posts to fix things, although they have mostly been minor. My next change, however, is a good one to leave in, as I feel it's a) good to show that you can't make the perfect solution there will always be changes to be made, and b) refactoring/adjusting or correcting plain inaccuracies is just part of the software development process. 
+Wouldn't having perfect hindsight would be great?
 
-The problem. I'm going to be using categories as the route slug, and obviously, not all characters play nicely in the URL. I figure if I replace any characters that are not alphanumeric or a hyphen with a hyphen, then it's a pretty easy way to solve this problem. That's my thoughts about it for the moment, and I guess time will tell. Now, that leaves me with another problem. Because I'm adjusting the category text I either use the adjusted category as the category text, yuk, or I change categories from simple string collection `string[]` to a complex type, such as, `{ name: string, slug: string}`. The complex type seems like a good solution, so I'll go with that one for now.
+The problem. I'm using categories as the route slug, and obviously, not all characters play nicely in the URL. I figure if I replace any characters that are not alphanumeric or a hyphen with a hyphen, then it's a pretty easy way to solve this problem. That's my thoughts about it for the moment, and I guess time will tell. Though, that leaves me with another problem. Because I adjust the category text, I either use the modified category as the category text, yuk, or change categories from a simple string collection `string[]` to a complex type. I opt for the complex type as it seems like a good solution, and I end up using the structure `{ name: string, slug: string}`.
 
-First, I'll create my sanitiseCategory function, placing it in the `/shared/posts.ts` file.
+First, I create my sanitiseCategory function, placing it in the `/shared/posts.ts` file.
 
 ```ts
 const sanitiseCategory = (category: string): string => category.replace(/([^a-z0-9\-])+/gi, '-').toLowerCase()
 ```
 
-Then I'll update the existing `extractBlogMeta` function to build the complex type.
+Then I update the existing `extractBlogMeta` function to build the complex type.
 
 ```ts
 export const extractBlogMeta = (data: { [key: string]: any }): IBlogMetadata => ({
@@ -124,7 +124,7 @@ export const extractBlogMeta = (data: { [key: string]: any }): IBlogMetadata => 
 })
 ```
 
-Of course my `IBlogMetadata` type defined in the `/pages/index.tsx` file needs to also reflect this change, so I'll change it from
+Of course, my `IBlogMetadata` type defined in the `/pages/index.tsx` file needs a small refactor too, so I change it from
 
 ```ts
 export interface IBlogMetadata {
@@ -150,7 +150,7 @@ export interface IBlogMetadata {
 }
 ```
 
-Next I need to alter where I render categories to the screen in the `/pages/index.tsx`, which this changes from
+Now I alter where I render categories to the screen in the `/pages/index.tsx`, which changes it from
 
 ```tsx
 <h2>Categories</h2>
@@ -176,7 +176,7 @@ to
 ))}
 ```
 
-My newly created function `getBlogMetadata` in the `/shared/build-time/posts.ts` needs a slight change, meaning it will go from
+My newly created function `getBlogMetadata` in the `/shared/build-time/posts.ts` needs a slight change, meaning it goes from
 
 ```ts
 export const getBlogMetadata = async (filterCategory?: string): Promise<IBlogMetadata[]> => {
@@ -207,7 +207,7 @@ export const getBlogMetadata = async (filterCategorySlug?: string): Promise<IBlo
 }
 ```
 
-I'm nearly there, one last adjustment is the `getDistinctCategories` function in the `/shared/posts.ts` file, which goes from
+Nearly there. One last adjustment I do in the'getDistinctCategories' function changes it from
 
 ```ts
 export const getDistinctCategories = (blogMetadata: IBlogMetadata[]): string[] =>
@@ -229,17 +229,17 @@ export const getDistinctCategories = (blogMetadata: IBlogMetadata[]): IBlogCateg
     .sort((catA: IBlogCategory, catB: IBlogCategory) => catA.slug.localeCompare(catB.slug))
 ```
 
-Even though I'm thinking the updated version of `getDistinctCategories` could perhaps be optimised, I won't worry about it because it's only used at build (webpack) time. If I notice a slow down at some point in the future, I'll revisit it, and other the parts, then.
+I notice that the updated version of `getDistinctCategories` could perhaps be optimised. I don't worry about it for now. Being only used at build time, I decide it's not worth the time and effort. However, my view may change if the build time duration starts increasing.
 
-Now I have both human and url friendly categories and category slugs.
+Now I have both human and URL friendly categories and category slugs.
 
-My categories now look like they always have, but importantly, my category URLs are slug friendly. For example, `http://localhost:3000/blog-category/aws-codedeploy`.
- 
+The categories look like they always have, but my category URLs are slug-friendly. For example, `http://localhost:3000/blog-category/aws-codedeploy`.
+
 ## Showing blogs posts within a category
 
-Thankfully, the refactoring and fixing the category verse category slug change was the hardest part of the showing blogs posts in a category. As I stated earlier, this page's functionality is a mix-up of the `/pages/index.tsx` and the `/pages/blog/[slug].tsx`.  
+Thankfully, refactoring and fixing the category URL is the hardest part of showing blog posts in a category. As I stated earlier, this page's functionality is a mix-up of the `/pages/index.tsx` and the `/pages/blog/[slug].tsx`.
 
-First, I'll lay down my `BlogCategory` component. As you can probably guess, a new component with new props, and minimal output to the screen.
+I add my `BlogCategory` component. As you have likely already guessed, it's a new component with new props and minimal output to the screen.
 
 ```tsx
 interface IBlogCategoryProps {
@@ -277,7 +277,7 @@ const BlogCategory = (props: IBlogCategoryProps) => {
 }
 ```
 
-Next, I'll define the `getStaticPaths` function, which as you might remember, is a way for me to tell Next.js all the static paths that exist for this slug. For this component it's a one-to-one mapping of a distinct list of categories.
+Next, I define the `getStaticPaths` function, which, as you might remember, is a way for me to tell Next.js all the static paths that exist for this slug. This component is a one-to-one mapping of the different categories.
 
 ```ts
 export const getStaticPaths: GetStaticPaths = async (): Promise<{
@@ -300,7 +300,9 @@ export const getStaticPaths: GetStaticPaths = async (): Promise<{
 }
 ```
 
-As you can see, with the refactoring I did beforehand, this is now pretty straight forward. Next.js, of course, will use this information to generate a list of static props, so I'll define that function now.
+With the refactoring I did beforehand, this is now pretty straightforward.
+
+Static paths are only half of the puzzle, so I define the `getStaticProps` function next.
 
 ```ts
 export const getStaticProps: GetStaticProps = async (context: GetStaticPropsContext): Promise<{ props: IBlogCategoryProps }> => {
@@ -316,17 +318,17 @@ export const getStaticProps: GetStaticProps = async (context: GetStaticPropsCont
 }
 ```
 
-Done. This function simply takes a category and returns the props (a list of blogs for the selected category) which is then used by my `BlogCategory` component to render the blogs within a category to the screen. Nice 👍
+Done. The function takes a category and returns the props (a list of blogs for the selected category), which is used by the`BlogCategory` component to render the blogs within a category to the screen. Nice 👍
 
 ## Demo
 
-When I fire up the dev server and point my browser to it, I can now see all the blog posts within a category.
+When I fire up the dev server and point my browser to it, I can see all the blog posts within a category.
 
 ![demo of showing blog posts within a category](/minimal-nextjs-blog-part4-show-posts-in-category/demo.gif)
 
 ---
 
-In [part 5](/posts/minimal-nextjs-blog-part5-miscellaneous-pages) I'll be adding support for miscellaneous pages. Like this part, it's going to be amazing (Again, Self Certified).
+In [part 5](/posts/minimal-nextjs-blog-part5-miscellaneous-pages) I support for miscellaneous pages. Like this part, it is amazing (Again, Self Certified).
 
 ## Source
 
