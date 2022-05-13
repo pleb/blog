@@ -240,7 +240,7 @@ Additionally, here's a little demo of the whole thing in action. Pretty neat, hu
 
 ---
 
-In [part 4](/posts/minimal-nextjs-blog-part4-show-category-list) I render a list of posts within a category. Like this part, it's amazing (Again, Self Certified).
+In [part 4](/posts/minimal-nextjs-blog-part4-show-category-list) I render a list of posts within a category. Like this part, it's amazing (Self Certified).
 
 ## Source
 

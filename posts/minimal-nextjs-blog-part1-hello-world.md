@@ -166,4 +166,4 @@ Yay. FINISHED!
 ---
 
 In [part 2](/posts/minimal-nextjs-blog-part1-hello-world) I render a list of posts and categories to the
-screen. Don't miss it, as it is amazing (Self Certified).
+screen. Like this part, it's amazing (Self Certified).

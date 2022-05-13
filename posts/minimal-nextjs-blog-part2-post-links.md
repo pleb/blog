@@ -178,7 +178,7 @@ That's it, such a simple way of writing a blog post - no database required.
 
 ---
 
-In [part 3](/posts/minimal-nextjs-blog-part3-show-post) I render a single blog post to the screen. Like this part, it's amazing (Again, Self Certified).
+In [part 3](/posts/minimal-nextjs-blog-part3-show-post) I render a single blog post to the screen. Like this part, it's amazing (Self Certified).
 
 ## Source
 

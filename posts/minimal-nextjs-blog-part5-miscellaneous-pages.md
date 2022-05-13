@@ -1,49 +1,51 @@
 ---
 title: Minimal Next.js Blog (Part 5 - Miscellaneous pages)
 slug: minimal-nextjs-blog-part5-miscellaneous-pages
-date: August 17, 2020
+date: May 1, 2022
 categories:
   - Next.js
   - Blogging
   - React
 ---
 
-*This is a multi-part series. If you haven't read the previous posts, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue on from each other and are not individual units.*
+*This is a multipart series. If you haven't read the previous post, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue on from each other and likely won't make sense as individual units.*
 
 ---
 
-Part 5, Welcome. In this part, I'll be adding support for miscellaneous pages, such as about me etc. I figure if Markdown is good enough for blogging, then it's good enough to be used for a miscellaneous page. 
+Part 5, Welcome. In this part, I add support for miscellaneous pages, such as about me, where I work, etc. If Markdown formatting is good enough for blogging, then I figure it's good enough for miscellaneous pages.
 
-Before I start, I've decided that the markdown files for miscellaneous pages will live under the folder `miscellaneous`. The primary reason of this is that the Next.js framework has taken the folder `pages`, so I can't use that one. If you recall, blog posts use the route `/blog/{post-slug}`. For miscellaneous pages, I've decided to use the top-level route, so for example `/{page-slug}`. I like this, as I always strive for clean looking URLs, and because this is only going to be a basic blog, I don't envisage any regret later on by taking the top-level route for this purpose. Well, fingers crossed anyway.   
+I decide that the markdown files for miscellaneous pages will live under the `miscellaneous` folder. The main reason is that the Next.js framework has taken the folder `pages`, so I can't use that one.
+
+If you recall, blog posts use the route format of `/blog/{post-slug}`. This is a sub-level route, as the blog posts live under the top-level `/blog/` route. For miscellaneous pages, I decide to use the top-level route of `/{page-slug}`. Using a top-level route means cleaner URLs. Additionally, because this is a basic blog site, I assume I'll have only a few miscellaneous pages.
 
 ## Refactor time
 
-Refactoring is good, as sharing logic and only having one place to update code is great for maintainability. It is however, not great for blogging, as I am finding out. That said..... I just can't not do it! Sigh.
+Refactoring is good, as sharing logic and only having one place to update code is great for maintainability. It is, however, not great for blogging, as I'm finding out. I've come too far to throw caution to the wind, though, so on with a refactor.
 
-To begin I'll add a `utilities.ts` file the `build-time` directory. The full path is `/shared/build-time/utilities.ts`.
+First, I add a `utilities.ts` file under the `build-time` directory.
 
-I'll add a shared method to convert Markdown to Html. 
+I then add sharable logic to convert Markdown to Html.
 
 ```ts
 export const covertMarkdownToHtml = async (content: string): Promise<string> =>
   (await unified().use(markdown).use(highlight).use(html).process(content)).toString()
 ```
 
-Then I'll update the `[slug].tsx` file that renders blog pages to the browser screen. The full path is `/pages/blog/[slug].tsx`. 
+With that sharable function declared, I update the `[slug].tsx` file, which renders blog pages to the browser screen.
 
-Changing
+It changes from:
 
 ```ts
 const html = await unified().use(markdown).use(highlight).use(html).process(content)
 ```
 
-to
+to:
 
 ```ts
 const html = await covertMarkdownToHtml(content)
 ```
 
-Next, I'll add a function to convert get markdown files and read a markdown file.
+Next, I add sharable logic to get Markdowns files and their content.
 
 ```ts
 export const getMarkdownFileNames = async (subPath: string): Promise<string[]> =>
@@ -52,9 +54,9 @@ export const getMarkdownFileNames = async (subPath: string): Promise<string[]> =
 export const readFile = (subPath: string, fileName: string): Buffer => readFileSync(`${process.cwd()}/${subPath}/${fileName}`)
 ```
 
-Then I'll update the functions in the `posts.ts` file to make use of these. The full path is `/shared/build-time/posts.ts`.
+With this sharable logic defined, I update the `build-time/posts.ts` file to use it.
 
-`getPostsMarkdownFileNames` changes from
+The code  for `getPostsMarkdownFileNames` changes from
 
 ```ts
 export const getPostsMarkdownFileNames = async (): Promise<string[]> =>
@@ -67,7 +69,7 @@ to
 export const getPostsMarkdownFileNames = async (): Promise<string[]> => getMarkdownFileNames('posts')
 ````
 
-And, `readPostFile` changes from
+And, the code for `readPostFile` changes from
 
 ```ts
 export const readPostFile = (fileName: string): Buffer => readFileSync(`${process.cwd()}/posts/${fileName}`)
@@ -81,7 +83,7 @@ export const readPostFile = (fileName: string): Buffer => readFile('posts', file
 
 ## My first miscellaneous page
 
-I'll add a simple first page, as I'm going to need one for testing. I'll create a `about.md` file in the `miscellaneous` directory. The full path is `/miscellaneous/about.md`. Then I'll add a small amount of markdown.
+I add a simple first page as I need one for testing. I create an `about.md` file in the `miscellaneous` directory. Then I add a small amount of markdown.
 
 ```md
 # About me
@@ -93,15 +95,18 @@ See, I told you it was small 😂
 
 ## Showing a miscellaneous page
 
-I'll start my adding my `[slug].tsx` file. The full path is `/pages/[slug].tsx`. Then I'll define my props type for a new `MiscellaneousPage` component.
+I start by adding a `[slug].tsx` file to the `pages` directory. This file handles all the top-level routes, which for the moment, are miscellaneous pages.
+
+I define this props type for the soon-to-be added `MiscellaneousPage` component.
 
 ```ts
 interface IMiscellaneousPage {
   html: string
 }
 ```
+As you can see, the prop is very simple and only takes a string of HTML.
 
-Like all the other pages I've added so far, this page will have minimal content. Therefore, my component is rather simple - as planned.
+Like the other pages I've added so far, this page will have minimal content. Therefore, my component is relatively simple - as planned.
 
 ```tsx
 const MiscellaneousPage = (props: IMiscellaneousPage) => {
@@ -121,7 +126,7 @@ const MiscellaneousPage = (props: IMiscellaneousPage) => {
 }
 ```
 
-I'll need to define the `getStaticPaths` and `getStaticProps` functions so that the Next.js can display the pages. I won't go into the detail of what these functions do, as I have covered this in previous posts in this series. Additionally, I won't go into detail of how I've implemented them, as again, it was covered previously, and I'd likely bore you if I did.
+I need to define the `getStaticPaths` and `getStaticProps` functions so that Next.js can display the pages. I won't detail what these functions do, as this is covered in previous posts in this series. Additionally, I won't describe how I've implemented them, as it was covered previously, and I'd likely bore you if I did.
 
 ```ts
 export const getStaticProps: GetStaticProps = async (context: GetStaticPropsContext): Promise<{ props: IMiscellaneousPage }> => {
@@ -156,7 +161,7 @@ export const getStaticPaths: GetStaticPaths = async (): Promise<{
 }
 ```
 
-And lastly, I'll add a link to my miscellaneous page in the `index.tsx` component. The full path is `/pages/index.tsx`
+And lastly, I add a link to my miscellaneous page in the `index.tsx` component. You'll notice the link to the about page is static. I decided that because there will only every be a handful of miscellaneous pages, the effort to making this links dynamic is not worth it.
 
 ```tsx
 <section>
@@ -168,18 +173,18 @@ And lastly, I'll add a link to my miscellaneous page in the `index.tsx` componen
 ```
 
 ## Demo
- 
-When I start the dev server and load the index page, I now see a link to my miscellaneous page. Nice 👍
+
+When I start the dev server and load the index page, I see a link to my miscellaneous page. Nice 👍
 
 ![Screenshot of page links](/minimal-nextjs-blog-part5-miscellaneous-pages/pages-link.png)
 
-And when I click the link I'm shown my about page. Again - Nice 👍
+And when I click the link, I'm shown the about page. Again - Nice 👍
 
 ![Screenshot of about page](/minimal-nextjs-blog-part5-miscellaneous-pages/about-page.png)
 
 ---
 
-In [part 6](/posts/minimal-nextjs-blog-part6-azure-hosting) I'll be deploying and hosting my blog in Azure. Like this part, it's going to be amazing (Again, Self Certified).
+In [part 6](/posts/minimal-nextjs-blog-part6-azure-hosting) I deploy and host my blog in Azure. Like this part, it's amazing (Self Certified).
 
 ## Source
 

@@ -328,7 +328,7 @@ When I fire up the dev server and point my browser to it, I can see all the blog
 
 ---
 
-In [part 5](/posts/minimal-nextjs-blog-part5-miscellaneous-pages) I support for miscellaneous pages. Like this part, it is amazing (Again, Self Certified).
+In [part 5](/posts/minimal-nextjs-blog-part5-miscellaneous-pages) I support for miscellaneous pages. Like this part, it's amazing (Self Certified).
 
 ## Source
 
