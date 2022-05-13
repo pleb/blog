@@ -1,7 +1,7 @@
 ---
 title: Minimal Next.js Blog (Part 2 - Post Link)
 slug: minimal-nextjs-blog-part2-post-links
-date: May 1, 2022
+date: May 2, 2022
 categories:
   - Next.js
   - Blogging

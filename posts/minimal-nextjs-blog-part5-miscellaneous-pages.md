@@ -1,7 +1,7 @@
 ---
 title: Minimal Next.js Blog (Part 5 - Miscellaneous pages)
 slug: minimal-nextjs-blog-part5-miscellaneous-pages
-date: May 1, 2022
+date: May 5, 2022
 categories:
   - Next.js
   - Blogging

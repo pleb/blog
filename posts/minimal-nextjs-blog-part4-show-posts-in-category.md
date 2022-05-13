@@ -1,7 +1,7 @@
 ---
 title: Minimal Next.js Blog (Part 4 - Show posts in category)
 slug: minimal-nextjs-blog-part4-show-posts-in-category
-date: May 1, 2022
+date: May 4, 2022
 categories:
   - Next.js
   - Blogging

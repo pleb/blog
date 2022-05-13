@@ -1,7 +1,7 @@
 ---
 title: Minimal Next.js Blog (Part 6 - Azure hosting)
 slug: minimal-nextjs-blog-part6-azure-hosting
-date: May 1, 2022
+date: May 6, 2022
 categories:
   - Next.js
   - Blogging
