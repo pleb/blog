@@ -8,7 +8,7 @@ categories:
   - React
 ---
 
-*This is a multipart series. If you haven't read the previous post, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue on from each other and likely won't make sense as individual units.*
+*This is a multipart series. If you haven't read the previous post, I'd suggest you start at [part 1](/blog/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue on from each other and likely won't make sense as individual units.*
 
 ---
 
@@ -104,4 +104,4 @@ But wait! There's more. When I make a PR in Github to the main branch, guess wha
 
 ---
 
-In [part 7](/posts/minimal-nextjs-blog-part7-styling) I add a few styles. Like this part, it's going to be amazing (Again, Self Certified).
+In [part 7](/blog/minimal-nextjs-blog-part7-styling) I add a few styles. Like this part, it's going to be amazing (Again, Self Certified).

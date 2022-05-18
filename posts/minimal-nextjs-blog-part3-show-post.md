@@ -8,7 +8,7 @@ categories:
   - React
 ---
 
-*This is a multipart series. If you haven't read the previous post, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue on from each other and likely won't make sense as individual units.*
+*This is a multipart series. If you haven't read the previous post, I'd suggest you start at [part 1](/blog/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue on from each other and likely won't make sense as individual units.*
 
 ---
 
@@ -240,7 +240,7 @@ Additionally, here's a little demo of the whole thing in action. Pretty neat, hu
 
 ---
 
-In [part 4](/posts/minimal-nextjs-blog-part4-show-category-list) I render a list of posts within a category. Like this part, it's amazing (Self Certified).
+In [part 4](/blog/minimal-nextjs-blog-part4-show-category-list) I render a list of posts within a category. Like this part, it's amazing (Self Certified).
 
 ## Source
 

@@ -8,7 +8,7 @@ categories:
   - React
 ---
 
-*This is a multipart series. If you haven't read the previous post, I'd suggest you start at [part 1](/posts/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue on from each other and likely won't make sense as individual units.*
+*This is a multipart series. If you haven't read the previous post, I'd suggest you start at [part 1](/blog/minimal-nextjs-blog-part1-hello-world), as all subsequent parts continue on from each other and likely won't make sense as individual units.*
 
 ---
 
@@ -184,7 +184,7 @@ And when I click the link, I'm shown the about page. Again - Nice 👍
 
 ---
 
-In [part 6](/posts/minimal-nextjs-blog-part6-azure-hosting) I deploy and host my blog in Azure. Like this part, it's amazing (Self Certified).
+In [part 6](/blog/minimal-nextjs-blog-part6-azure-hosting) I deploy and host my blog in Azure. Like this part, it's amazing (Self Certified).
 
 ## Source
 
