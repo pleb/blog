@@ -104,4 +104,4 @@ But wait! There's more. When I make a PR in Github to the main branch, guess wha
 
 ---
 
-In [part 7](/posts/minimal-nextjs-blog-part6-react-components) I'll be updating the UI getting it ready for styling. Like this part, it's going to be amazing (Again, Self Certified).
+In [part 7](/posts/minimal-nextjs-blog-part7-styling) I add a few styles. Like this part, it's going to be amazing (Again, Self Certified).

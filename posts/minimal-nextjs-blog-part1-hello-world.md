@@ -165,5 +165,5 @@ Yay. FINISHED!
 
 ---
 
-In [part 2](/posts/minimal-nextjs-blog-part1-hello-world) I render a list of posts and categories to the
+In [part 2](/posts/minimal-nextjs-blog-part2-post-links) I render a list of posts and categories to the
 screen. Like this part, it's amazing (Self Certified).
